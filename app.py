@@ -1,10 +1,5 @@
 import pygame
 def main():
-        
-    i=2
-
-    if i > 1:
-        i += 1
 
     # Initialize Pygame
     pygame.init()
@@ -16,8 +11,10 @@ def main():
         # Create window with given size
         pygame.display.set_mode(screen_size)
 
+                
+        while True:
+            pass
+
     create_main_surface()
-
 main()
-
 

@@ -4,6 +4,7 @@ from entities.player import Player
 from entities.obstacle import Obstacle
 from entities.gift import Gift
 from utils.score import Score
+from background import Background
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -62,7 +63,8 @@ while running:
     player = Player()
     obstacles = []
     gifts = []
-    bullets = []  # NEW: list of bullets
+    bullets = [] 
+    background = Background()
     score = Score()
     gift_spawn_timer = 0
     spawn_rate = 60
@@ -146,7 +148,7 @@ while running:
                     break
 
         # 5. DRAW
-        screen.fill(BACKGROUND_COLOR)
+        background.render(screen)
         player.draw(screen, keys)
         score.draw(screen)
         for obs in obstacles:

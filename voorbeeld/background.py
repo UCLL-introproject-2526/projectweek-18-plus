@@ -1,16 +1,11 @@
 import pygame
 from settings import WIDTH, HEIGHT
 
-import pygame
-from settings import WIDTH, HEIGHT
-
-import pygame
-from settings import WIDTH, HEIGHT
-
 class Background:
-    def __init__(self, image_path):
+    def __init__(self):
         # Laad de originele afbeelding
-        img = pygame.image.load(image_path).convert()
+
+        img = pygame.image.load("voorbeeld/assets/background_game.png").convert_alpha()
 
         # Maak de afbeelding iets breder en langer
         new_width = int(WIDTH * 1.1)   # 10% breder

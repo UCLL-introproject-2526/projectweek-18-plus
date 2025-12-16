@@ -74,12 +74,12 @@ while running:
     # 4. COLLISIONS (punt 8)
     for obs in obstacles:
         if player.rect.colliderect(obs.rect):
-            running = False   # GAME OVER
+            running = False
     
-    for gift in gifts[:]:  # kopie om veilig te verwijderen
+    for gift in gifts[:]:
         if player.rect.colliderect(gift.rect):
-            score.add(10)        # +10 punten
-            gifts.remove(gift)   # cadeautje “verdwijnt”
+            score.add(10)
+            gifts.remove(gift)
 
     # 5. TEKENEN (punt 7)
     screen.fill(BACKGROUND_COLOR)

@@ -2,8 +2,9 @@ import pygame
 from settings import WIDTH, HEIGHT, FPS, BACKGROUND_COLOR
 from entities.obstacle import Obstacle
 from entities.gift import Gift
-from utils.score import Score
 from entities.player import Player
+from utils.score import Score
+from utils.reindeer import ReindeerEvent
 from background import Background
 
 pygame.init()
@@ -142,6 +143,7 @@ def show_game_over(screen, score_value):
 highscore = 0
 last_score = None
 running = True
+reindeer_event = None
 
 while running:
 
@@ -157,8 +159,10 @@ while running:
     score = Score()
     gift_spawn_timer = 0
     spawn_rate = 60
+    span_rate_base = 60
     spawn_timer = 0
     score_timer = 0
+    speed_multiplier = 1
 
     # 3. Main game loop
     game_active = True
@@ -187,16 +191,23 @@ while running:
             spawn_rate = 30
         elif score.value > 100:
             spawn_rate = 40
+        elif score.value > 50:
+            spawn_rate = 50
         else:
-            spawn_rate = 60
+            spawn_rate = span_rate_base
 
         spawn_timer += 1
         if spawn_timer > spawn_rate:
             obstacles.append(Obstacle())
             spawn_timer = 0
+        
+        if reindeer_event is not None and reindeer_event.active:
+            speed_multiplier = 2
+        else:
+            speed_multiplier = 1
 
         for obs in obstacles:
-            obs.update()
+            obs.update(speed_multiplier)
 
         gift_spawn_timer += 1
         if gift_spawn_timer > 200:
@@ -233,6 +244,17 @@ while running:
                     bullets.remove(bullet)
                     score.add(5)
                     break
+        
+        if score.value >= 200 and score.value <= 215 and reindeer_event is None:
+            reindeer_event = ReindeerEvent()
+
+        if reindeer_event is not None and reindeer_event.active:
+            spawn_rate = 5
+        else:
+            spawn_rate = span_rate_base
+        
+        if reindeer_event is not None and not reindeer_event.active:
+            reindeer_event = None
 
         # DRAW
         background.render(screen)
@@ -244,6 +266,11 @@ while running:
             gift.draw(screen)
         for bullet in bullets:
             bullet.draw(screen)
+
+        if reindeer_event is not None and reindeer_event.active:
+            reindeer_event.update()
+            reindeer_event.draw(screen)
+
 
         pygame.display.update()
 

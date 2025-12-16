@@ -131,7 +131,7 @@ while running:
 
         # 5. DRAW
         screen.fill(BACKGROUND_COLOR)
-        player.draw(screen)
+        player.draw(screen, keys)
         score.draw(screen)
         for obs in obstacles:
             obs.draw(screen)

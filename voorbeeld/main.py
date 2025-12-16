@@ -27,8 +27,8 @@ class Bullet:
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
 # == Load background for start screen ==
 try:
-    background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
-    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+    start_background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
+    start_background = pygame.transform.scale(start_background, (WIDTH, HEIGHT))
 except Exception as e:
     background = None
     print(f"[WARN] Background not loaded: {e}")
@@ -54,15 +54,15 @@ class Bullet:
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
 
 # == Start Screen with new text layout ==
-def show_front_screen(screen, highscore, last_score=None):
+def show_front_screen(screen, start_background, highscore, last_score=None):
     font_title = pygame.font.SysFont(None, 72)
     font_text = pygame.font.SysFont(None, 48)
 
     selected_index = 0  # start with santa
 
     while True:
-        if background:
-            screen.blit(background, (0, 0))
+        if start_background:
+            screen.blit(start_background, (0, 0))
         else:
             screen.fill((0, 0, 50))
 
@@ -121,7 +121,7 @@ last_score = None
 running = True
 
 while running:
-    chosen_image = show_front_screen(screen, highscore, last_score)
+    chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
     player = Player(chosen_image)
     obstacles = []
     gifts = []

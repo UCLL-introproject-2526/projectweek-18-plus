@@ -3,6 +3,7 @@ from settings import WIDTH, HEIGHT, FPS, BACKGROUND_COLOR
 from entities.obstacle import Obstacle
 from entities.gift import Gift
 from utils.score import Score
+from entities.player import Player
 from background import Background
 
 pygame.init()
@@ -36,33 +37,9 @@ except Exception as e:
 skin_names = ["santa", "snowman", "elf"]
 skin_images = [
     pygame.transform.scale(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha(), (70, 80)),
-    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha(), (90, 100)),
+    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha(), (120, 130)),
     pygame.transform.scale(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha(), (80, 90))
 ]
-
-# == Player class ==
-class Player:
-    def __init__(self, image):
-        self.width = 60
-        self.height = 70
-        self.x = WIDTH // 2
-        self.y = HEIGHT - 80
-        self.speed = 6
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.image = image
-
-    def move(self, keys):
-        if keys[pygame.K_LEFT]:
-            self.rect.x -= self.speed
-        if keys[pygame.K_RIGHT]:
-            self.rect.x += self.speed
-        self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
-
-    def draw(self, screen, keys):
-        if keys[pygame.K_LEFT]:
-            screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
-        else:
-            screen.blit(self.image, self.rect)
 
 # == Bullet class ==
 class Bullet:

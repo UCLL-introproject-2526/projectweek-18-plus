@@ -13,7 +13,7 @@ class Player:
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
         self.image = pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (60, 70))
+        self.image = pygame.transform.scale(self.image, (70, 80))
 
     def move(self, keys):
         if keys[pygame.K_LEFT]:

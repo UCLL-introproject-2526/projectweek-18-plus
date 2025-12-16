@@ -1,0 +1,102 @@
+import pygame
+from settings import *
+from entities.player import Player
+from entities.obstacle import Obstacle
+from entities.gift import Gift
+from utils.score import Score
+
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Santa Dodger")
+clock = pygame.time.Clock()
+
+# === OBJECTEN AANMAKEN ===
+player = Player()
+obstacles = []
+score = Score()
+gifts = []
+
+gift_spawn_timer = 0
+spawn_rate = 60
+spawn_timer = 0
+score_timer = 0
+running = True
+
+# === GAME LOOP ===
+while running:
+    clock.tick(FPS)
+
+    # 1. EVENTS (sluiten van het venster)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+    # 2. INPUT
+    keys = pygame.key.get_pressed()
+    player.move(keys)
+
+    # 3. OBJECTEN UPDATEN
+
+    if score.value > 100:
+        spawn_rate = 40
+    elif score.value > 150:
+        spawn_rate = 30
+    elif score.value > 200:
+        spawn_rate = 20
+    elif score.value > 200:
+        spawn_rate = 15
+    elif score.value > 250:
+        spawn_rate = 10
+    
+    spawn_timer += 1
+    if spawn_timer > spawn_rate:
+        obstacles.append(Obstacle())
+        spawn_timer = 0
+    
+
+    for obs in obstacles:
+        obs.update()
+    
+    gift_spawn_timer += 1
+    if gift_spawn_timer > 200:  # bijvoorbeeld elke 2 seconden
+        gifts.append(Gift())
+        gift_spawn_timer = 0
+
+    for gift in gifts:
+        gift.update()
+
+    score_timer += 1
+    if score_timer >= FPS:
+        score.add(1)
+        score_timer = 0
+
+    # 4. COLLISIONS (punt 8)
+    for obs in obstacles:
+        if player.rect.colliderect(obs.rect):
+            running = False   # GAME OVER
+    
+    for gift in gifts[:]:  # kopie om veilig te verwijderen
+        if player.rect.colliderect(gift.rect):
+            score.add(10)        # +10 punten
+            gifts.remove(gift)   # cadeautje “verdwijnt”
+
+    # 5. TEKENEN (punt 7)
+    screen.fill(BACKGROUND_COLOR)
+    player.draw(screen)
+    score.draw(screen)
+    for obs in obstacles:
+        obs.draw(screen)
+    for gift in gifts:
+        gift.draw(screen)
+
+    pygame.display.update()
+
+if not running:
+    font = pygame.font.SysFont(None, 64)
+    text = font.render("GAME OVER", True, (255, 0, 0))
+    screen.blit(text, (WIDTH//2 - 150, HEIGHT//2))
+    pygame.display.update()
+    pygame.time.wait(2000)
+
+pygame.quit()

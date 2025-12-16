@@ -11,6 +11,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+#  OBJECTEN AANMAKEN
 #== highscore == 
 highscore = 0 
 
@@ -51,6 +52,7 @@ spawn_timer = 0
 score_timer = 0
 running = True
 
+#  GAME LOOP 
 
 
 # === GAME LOOP ===
@@ -185,7 +187,7 @@ while running:
         obs.update()
     
     gift_spawn_timer += 1
-    if gift_spawn_timer > 200:  # bijvoorbeeld elke 2 seconden
+    if gift_spawn_timer > 200:  
         gifts.append(Gift())
         gift_spawn_timer = 0
 
@@ -200,16 +202,16 @@ while running:
     # 4. COLLISIONS (punt 8)
     for obs in obstacles:
         if player.rect.colliderect(obs.rect):
-            running = False   # GAME OVER
+            running = False
     
-    for gift in gifts[:]:  # kopie om veilig te verwijderen
+    for gift in gifts[:]:
         if player.rect.colliderect(gift.rect):
-            score.add(10)        # +10 punten
-            gifts.remove(gift)   # cadeautje “verdwijnt”
+            score.add(10)
+            gifts.remove(gift)
 
     # 5. TEKENEN (punt 7)
     screen.fill(BACKGROUND_COLOR)
-    player.draw(screen)
+    player.draw(screen, keys)
     score.draw(screen)
     for obs in obstacles:
         obs.draw(screen)

@@ -160,6 +160,7 @@ while running:
     gift_spawn_timer = 0
     spawn_rate = 60
     span_rate_base = 60
+    ammo = 10
     spawn_timer = 0
     score_timer = 0
     speed_multiplier = 1
@@ -177,9 +178,11 @@ while running:
                 running = False
                 game_active = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                if ammo > 0: 
+                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                    ammo -= 1
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # toggle pause
+                if event.key == pygame.K_p:
                     paused = not paused
         
         # PAUSED
@@ -248,6 +251,7 @@ while running:
             if player.rect.colliderect(gift.rect):
                 score.add(10)
                 gifts.remove(gift)
+                ammo += 3
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -272,12 +276,19 @@ while running:
         background.render(screen)
         player.draw(screen, keys)
         score.draw(screen)
+
+        font = pygame.font.SysFont(None, 36)
+        ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
+        screen.blit(ammo_text, (10, 40))
+
         for obs in obstacles:
             obs.draw(screen)
         for gift in gifts:
             gift.draw(screen)
         for bullet in bullets:
             bullet.draw(screen)
+        
+
 
         if reindeer_event is not None and reindeer_event.active:
             reindeer_event.update()

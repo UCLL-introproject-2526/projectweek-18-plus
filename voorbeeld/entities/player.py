@@ -9,8 +9,9 @@ class Player:
         self.x = WIDTH // 2
         self.y = HEIGHT - 80
         self.speed = 6
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
-        self.image = image
+        PLAYER_SIZE = (60, 70)
+        self.image = pygame.transform.scale(image, PLAYER_SIZE)
+        self.rect = self.image.get_rect(midbottom=(WIDTH//2, HEIGHT - 10))
 
     def move(self, keys):
         if keys[pygame.K_LEFT]:

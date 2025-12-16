@@ -147,7 +147,7 @@ while running:
 
         # 5. DRAW
         screen.fill(BACKGROUND_COLOR)
-        player.draw(screen)
+        player.draw(screen, keys)
         score.draw(screen)
         for obs in obstacles:
             obs.draw(screen)
@@ -167,5 +167,6 @@ while running:
     screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
     pygame.display.update()
     pygame.time.wait(2000)
+
 
 pygame.quit()

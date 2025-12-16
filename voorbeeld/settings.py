@@ -1,5 +1,5 @@
 WIDTH = 800
-HEIGHT = 800
+HEIGHT = 600
 FPS = 60
 
 BACKGROUND_COLOR = (30, 30, 60)  # donkerblauw

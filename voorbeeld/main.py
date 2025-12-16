@@ -163,6 +163,7 @@ while running:
     spawn_timer = 0
     score_timer = 0
     speed_multiplier = 1
+    paused = False
 
     # 3. Main game loop
     game_active = True
@@ -175,8 +176,19 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
                 game_active = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
                 bullets.append(Bullet(player.rect.centerx, player.rect.top))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # toggle pause
+                    paused = not paused
+        
+        # PAUSED
+        if paused:
+            font = pygame.font.SysFont(None, 64)
+            pause_text = font.render("PAUSED - Press P to Resume", True, (255, 255, 0))
+            screen.blit(pause_text, (WIDTH//2 - pause_text.get_width()//2, HEIGHT//2))
+            pygame.display.update()
+            continue  # skip updates while paused
 
         # INPUT
         keys = pygame.key.get_pressed()

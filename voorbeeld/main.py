@@ -10,26 +10,38 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
-# == highscore ==
-highscore = 0
+# == Highscore persistence ==
+def load_highscore():
+    try:
+        with open("highscore.txt", "r") as f:
+            return int(f.read())
+    except:
+        return 0
+
+def save_highscore(score):
+    with open("highscore.txt", "w") as f:
+        f.write(str(score))
+
+highscore = load_highscore()
 
 # == Bullet class ==
 class Bullet:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 6, 12)  # small rectangle bullet
-        self.speed = -8  # upward movement
+        self.rect = pygame.Rect(x, y, 6, 12)
+        self.speed = -8
 
     def update(self):
         self.rect.y += self.speed
 
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
+
 # == Load background for start screen ==
 try:
-    background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
-    background = pygame.transform.scale(background, (WIDTH, HEIGHT))
+    start_background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
+    start_background = pygame.transform.scale(start_background, (WIDTH, HEIGHT))
 except Exception as e:
-    background = None
+    start_background = None
     print(f"[WARN] Background not loaded: {e}")
 
 # == Load skins into a wheel list ==
@@ -64,53 +76,40 @@ class Player:
         else:
             screen.blit(self.image, self.rect)
 
-# == Bullet class ==
-class Bullet:
-    def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 6, 12)
-        self.speed = -8
-
-    def update(self):
-        self.rect.y += self.speed
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)
-
-# == Start Screen with new text layout ==
+# == Start Screen ==
 def show_front_screen(screen, highscore, last_score=None):
     font_title = pygame.font.SysFont(None, 72)
     font_text = pygame.font.SysFont(None, 48)
 
-    selected_index = 0  # start with santa
+    selected_index = 0
 
     while True:
-        if background:
-            screen.blit(background, (0, 0))
+        if start_background:
+            screen.blit(start_background, (0, 0))
         else:
             screen.fill((0, 0, 50))
 
-        # 1. Title
+        #==cTitlec==
         title = font_title.render("Santa Dodger", True, (0, 0, 0))
         screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//4))
 
-        # 2. Highscore
+        #== Highscore ==
         hs_text = font_text.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 80))
 
-        # 3. Last score
+        #== Last score==
         if last_score is not None:
             last_text = font_text.render(f"Last score: {last_score}", True, (0, 0, 0))
             screen.blit(last_text, (WIDTH//2 - last_text.get_width()//2, HEIGHT//4 + 140))
 
-        # 4. Press SPACE to start
+        #== Instruction ==
         instruction = font_text.render("Press SPACE to start", True, (0, 0, 0))
         screen.blit(instruction, (WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
 
-        # 5. Skin select label
+        #== Skin select == 
         skin_label = font_text.render("Skin Select:", True, (0, 0, 0))
         screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
 
-        # 6. Skins (wheel selector)
         preview = skin_images[selected_index]
         screen.blit(preview, (WIDTH//2 - preview.get_width()//2, HEIGHT//4 + 320))
 
@@ -120,42 +119,37 @@ def show_front_screen(screen, highscore, last_score=None):
         small_prev = pygame.transform.scale(skin_images[prev_index], (40, 50))
         small_next = pygame.transform.scale(skin_images[next_index], (40, 50))
 
-        screen.blit(small_prev, (WIDTH//2 - 80, HEIGHT//4 + 380))
-        screen.blit(small_next, (WIDTH//2 + 40, HEIGHT//4 + 380))
+        screen.blit(small_prev, (WIDTH//2 - 120, HEIGHT//4 + 330))
+        screen.blit(small_next, (WIDTH//2 + 80, HEIGHT//4 + 330))
 
         pygame.display.update()
 
-        # Event handling
+        #== Event handling ==
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    return skin_images[selected_index]  # return the chosen image
+                    return skin_images[selected_index]
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skin_images)
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skin_images)
 
 # == Main Game Loop ==
-highscore = 0
 last_score = None
 running = True
 
 while running:
     chosen_image = show_front_screen(screen, highscore, last_score)
     player = Player(chosen_image)
-    obstacles = []
-    gifts = []
-    bullets = [] 
+    obstacles, gifts, bullets = [], [], []
     background = Background()
     score = Score()
-    gift_spawn_timer = 0
-    spawn_rate = 60
-    spawn_timer = 0
-    score_timer = 0
+    gift_spawn_timer, spawn_rate, spawn_timer, score_timer = 0, 60, 0, 0
     game_active = True
+    paused = False  
 
     while game_active:
         clock.tick(FPS)
@@ -165,19 +159,25 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
                 game_active = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
                 bullets.append(Bullet(player.rect.centerx, player.rect.top))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:  # toggle pause
+                    paused = not paused
 
-            # Shooting with left mouse click
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # left mouse button
-                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
+        # PAUSE HANDLING
+        if paused:
+            font = pygame.font.SysFont(None, 64)
+            pause_text = font.render("PAUSED - Press P to Resume", True, (255, 255, 0))
+            screen.blit(pause_text, (WIDTH//2 - pause_text.get_width()//2, HEIGHT//2))
+            pygame.display.update()
+            continue  # skip updates while paused
 
-        # 2. INPUT
+        # INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 
-        # UPDATE OBJECTS (fixed ordering)
+        # UPDATE OBJECTS
         if score.value > 250:
             spawn_rate = 10
         elif score.value > 200:
@@ -233,16 +233,13 @@ while running:
                     score.add(5)
                     break
 
-        # 5. DRAW
+        # DRAW
         background.render(screen)
         player.draw(screen, keys)
         score.draw(screen)
-        for obs in obstacles:
-            obs.draw(screen)
-        for gift in gifts:
-            gift.draw(screen)
-        for bullet in bullets:
-            bullet.draw(screen)
+        for obs in obstacles: obs.draw(screen)
+        for gift in gifts: gift.draw(screen)
+        for bullet in bullets: bullet.draw(screen)
 
         pygame.display.update()
 
@@ -250,11 +247,14 @@ while running:
     last_score = score.value
     if score.value > highscore:
         highscore = score.value
+        save_highscore(highscore)
 
     font = pygame.font.SysFont(None, 64)
+    screen.fill((0, 0, 0))
     text = font.render("GAME OVER", True, (255, 0, 0))
     screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
     pygame.display.update()
-    pygame.time.wait(2000)
+    pygame.time.wait(200)
 
 pygame.quit()
+

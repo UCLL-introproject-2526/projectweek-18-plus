@@ -118,13 +118,37 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skins)
 
+# == End Screen ==
+
+def draw_text_outline(font, text, color, outline, x, y):
+        text_surf = font.render(text, True, color)
+        outline_surf = font.render(text, True, outline)
+        text_rect = text_surf.get_rect(center=(x, y))
+
+        for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
+           screen.blit(outline_surf, text_rect.move(dx, dy))
+
+        screen.blit(text_surf, text_rect)
+
+def show_game_over(screen, score_value):
+    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH//2, HEIGHT//2)
+    score_text = FONT_TEXT.render(f"Score: {score_value}", True, (0, 0, 0))
+    score_rect = score_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 60))
+    screen.blit(score_text, score_rect)
+    pygame.display.update()
+    pygame.time.wait(2000)
+
 # == Main Game Loop ==
 highscore = 0
 last_score = None
 running = True
 
 while running:
+
+    # 1. Start screen
     chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
+
+    #2. Initialize game    
     player = Player(chosen_image)
     obstacles = []
     gifts = []
@@ -135,6 +159,8 @@ while running:
     spawn_rate = 60
     spawn_timer = 0
     score_timer = 0
+
+    # 3. Main game loop
     game_active = True
 
     while game_active:
@@ -147,11 +173,6 @@ while running:
                 game_active = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 bullets.append(Bullet(player.rect.centerx, player.rect.top))
-
-            # Shooting with left mouse click
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:  # left mouse button
-                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
 
         # INPUT
         keys = pygame.key.get_pressed()
@@ -226,29 +247,11 @@ while running:
 
         pygame.display.update()
 
-    # GAME OVER SCREEN
+    # 4. Game Over 
     last_score = score.value
     if score.value > highscore:
         highscore = score.value
-    
-    # OUTLINE TEXT
-    def draw_text_outline(font, text, color, outline, x, y):
-        text_surf = font.render(text, True, color)
-        outline_surf = font.render(text, True, outline)
-        text_rect = text_surf.get_rect(center=(x, y))
+    show_game_over(screen, score.value)
 
-        for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
-           screen.blit(outline_surf, text_rect.move(dx, dy))
-
-        screen.blit(text_surf, text_rect)
-
-    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH//2, HEIGHT//2)
-
-    score_text = FONT_TEXT.render(f"Score: {score.value}", True, (0, 0, 0))
-    score_rect = score_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 60))
-    screen.blit(score_text, score_rect)
-
-    pygame.display.update()
-    pygame.time.wait(1500)
 
 pygame.quit()

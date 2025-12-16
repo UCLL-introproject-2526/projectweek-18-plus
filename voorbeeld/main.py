@@ -49,7 +49,7 @@ skin_names = ["santa", "snowman", "elf"]
 skin_images = [
     pygame.transform.scale(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha(), (70, 80)),
     pygame.transform.scale(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha(), (90, 100)),
-    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha(), (80, 90))
+    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha(), (80, 90))  # fixed typo
 ]
 
 # == Player class ==
@@ -89,24 +89,24 @@ def show_front_screen(screen, highscore, last_score=None):
         else:
             screen.fill((0, 0, 50))
 
-        #==cTitlec==
+        # Title
         title = font_title.render("Santa Dodger", True, (0, 0, 0))
         screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//4))
 
-        #== Highscore ==
+        # Highscore
         hs_text = font_text.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 80))
 
-        #== Last score==
+        # Last score
         if last_score is not None:
             last_text = font_text.render(f"Last score: {last_score}", True, (0, 0, 0))
             screen.blit(last_text, (WIDTH//2 - last_text.get_width()//2, HEIGHT//4 + 140))
 
-        #== Instruction ==
+        # Instruction
         instruction = font_text.render("Press SPACE to start", True, (0, 0, 0))
         screen.blit(instruction, (WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
 
-        #== Skin select == 
+        # Skin select
         skin_label = font_text.render("Skin Select:", True, (0, 0, 0))
         screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
 
@@ -124,7 +124,7 @@ def show_front_screen(screen, highscore, last_score=None):
 
         pygame.display.update()
 
-        #== Event handling ==
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -147,9 +147,10 @@ while running:
     obstacles, gifts, bullets = [], [], []
     background = Background()
     score = Score()
+    ammo = 10   # NEW: starting ammo
     gift_spawn_timer, spawn_rate, spawn_timer, score_timer = 0, 60, 0, 0
     game_active = True
-    paused = False  
+    paused = False
 
     while game_active:
         clock.tick(FPS)
@@ -160,18 +161,21 @@ while running:
                 running = False
                 game_active = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                if ammo > 0:  # only shoot if ammo left
+                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                    ammo -= 1
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:  # toggle pause
+                if event.key == pygame.K_p:
                     paused = not paused
 
         # PAUSE HANDLING
         if paused:
             font = pygame.font.SysFont(None, 64)
             pause_text = font.render("PAUSED - Press P to Resume", True, (255, 255, 0))
+            screen.fill((0, 0, 0))
             screen.blit(pause_text, (WIDTH//2 - pause_text.get_width()//2, HEIGHT//2))
             pygame.display.update()
-            continue  # skip updates while paused
+            continue
 
         # INPUT
         keys = pygame.key.get_pressed()
@@ -224,6 +228,7 @@ while running:
             if player.rect.colliderect(gift.rect):
                 score.add(10)
                 gifts.remove(gift)
+                ammo += 3  # NEW: gifts reload ammo
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -237,6 +242,12 @@ while running:
         background.render(screen)
         player.draw(screen, keys)
         score.draw(screen)
+
+        # NEW: draw ammo counter
+        font = pygame.font.SysFont(None, 36)
+        ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
+        screen.blit(ammo_text, (10, 40))
+
         for obs in obstacles: obs.draw(screen)
         for gift in gifts: gift.draw(screen)
         for bullet in bullets: bullet.draw(screen)
@@ -255,6 +266,5 @@ while running:
     screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
     pygame.display.update()
     pygame.time.wait(200)
-
 pygame.quit()
 

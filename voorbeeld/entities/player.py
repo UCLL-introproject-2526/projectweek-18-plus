@@ -1,5 +1,6 @@
 import pygame
 from settings import WIDTH, HEIGHT
+from pygame.display import flip
 
 class Player:
     def __init__(self):
@@ -8,7 +9,11 @@ class Player:
         self.x = WIDTH // 2
         self.y = HEIGHT - 80
         self.speed = 6
+
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+
+        self.image = pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (70, 80))
 
     def move(self, keys):
         if keys[pygame.K_LEFT]:
@@ -18,5 +23,13 @@ class Player:
 
         self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, (200, 0, 0), self.rect)
+    def draw(self, screen, keys):
+        if keys[pygame.K_LEFT]:
+            screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
+        elif keys[pygame.K_RIGHT]:
+            screen.blit(self.image, self.rect)
+        else:
+            screen.blit(self.image, self.rect)
+
+
+

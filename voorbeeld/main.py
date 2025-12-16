@@ -11,20 +11,15 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+# == Fonts ==
+FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
+FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
+FONT_SMALL = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 24)
+
 # == highscore ==
 highscore = 0
 
-# == Bullet class ==
-class Bullet:
-    def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 6, 12)  # small rectangle bullet
-        self.speed = -8  # upward movement
 
-    def update(self):
-        self.rect.y += self.speed
-
-    def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)
 # == Load background for start screen ==
 try:
     start_background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
@@ -59,10 +54,8 @@ class Bullet:
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 255, 255), self.rect)
 
-# == Start Screen with new text layout ==
+# == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-    font_title = pygame.font.SysFont(None, 72)
-    font_text = pygame.font.SysFont(None, 48)
 
     selected_index = 0  # start with santa
 
@@ -72,28 +65,26 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
         else:
             screen.fill((0, 0, 50))
 
-        # 1. Title
-        title = font_title.render("Santa Dodger", True, (0, 0, 0))
-        screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//4))
+        title = FONT_TITLE.render("Santa Dodger", True, (0, 0, 0))
+        screen.blit(title,(WIDTH//2 - title.get_width()//2, HEIGHT//4))
 
-        # 2. Highscore
-        hs_text = font_text.render(f"Highscore: {highscore}", True, (130, 5, 24))
-        screen.blit(hs_text, (WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 80))
+        hs_text = FONT_TEXT.render(f"Highscore: {highscore}", True, (130, 5, 24))
+        screen.blit(hs_text,(WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 90))
 
-        # 3. Last score
+        instruction = FONT_SMALL.render("Press SPACE to start", True, (0, 0, 0))
+        screen.blit(instruction,(WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
+
+        # Last score
         if last_score is not None:
-            last_text = font_text.render(f"Last score: {last_score}", True, (0, 0, 0))
+            last_text = FONT_SMALL.render(f"Last score: {last_score}", True, (0, 0, 0))
             screen.blit(last_text, (WIDTH//2 - last_text.get_width()//2, HEIGHT//4 + 140))
 
-        # 4. Press SPACE to start
-        instruction = font_text.render("Press SPACE to start", True, (0, 0, 0))
-        screen.blit(instruction, (WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
 
-        # 5. Skin select label
-        skin_label = font_text.render("Skin Select:", True, (0, 0, 0))
+        # Skin select label
+        skin_label = FONT_SMALL.render("Skin Select:", True, (0, 0, 0))
         screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
 
-        # 6. Skins (wheel selector)
+        # Skins (wheel selector)
         preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
         screen.blit(preview,(WIDTH//2 - PREVIEW_SIZE[0]//2, HEIGHT//4 + 320))
 
@@ -162,7 +153,7 @@ while running:
                 if event.button == 1:  # left mouse button
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
 
-        # 2. INPUT
+        # INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 
@@ -222,7 +213,7 @@ while running:
                     score.add(5)
                     break
 
-        # 5. DRAW
+        # DRAW
         background.render(screen)
         player.draw(screen, keys)
         score.draw(screen)
@@ -239,11 +230,25 @@ while running:
     last_score = score.value
     if score.value > highscore:
         highscore = score.value
+    
+    # OUTLINE TEXT
+    def draw_text_outline(font, text, color, outline, x, y):
+        text_surf = font.render(text, True, color)
+        outline_surf = font.render(text, True, outline)
+        text_rect = text_surf.get_rect(center=(x, y))
 
-    font = pygame.font.SysFont(None, 64)
-    text = font.render("GAME OVER", True, (255, 0, 0))
-    screen.blit(text, (WIDTH//2 - text.get_width()//2, HEIGHT//2))
+        for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
+           screen.blit(outline_surf, text_rect.move(dx, dy))
+
+        screen.blit(text_surf, text_rect)
+
+    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH//2, HEIGHT//2)
+
+    score_text = FONT_TEXT.render(f"Score: {score.value}", True, (0, 0, 0))
+    score_rect = score_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 60))
+    screen.blit(score_text, score_rect)
+
     pygame.display.update()
-    pygame.time.wait(2000)
+    pygame.time.wait(1500)
 
 pygame.quit()

@@ -12,7 +12,7 @@ class Player:
 
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        self.image = pygame.image.load("projectweek-18-plus/voorbeeld/assets/Santa_Avatar.png").convert_alpha()
+        self.image = pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (60, 70))
 
     def move(self, keys):

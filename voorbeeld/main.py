@@ -151,11 +151,4 @@ while running:
     pygame.time.wait(2000)
 
 
-if not running:
-    font = pygame.font.SysFont(None, 64)
-    text = font.render("GAME OVER", True, (255, 0, 0))
-    screen.blit(text, (WIDTH//2 - 150, HEIGHT//2))
-    pygame.display.update()
-    pygame.time.wait(1000)
-
 pygame.quit()

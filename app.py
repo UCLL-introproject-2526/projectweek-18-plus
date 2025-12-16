@@ -68,8 +68,6 @@ def main():
 
         render_frame(surface, i)
         i += elapsed_sec*50
-
-    
     
 main()
 

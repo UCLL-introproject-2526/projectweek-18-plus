@@ -34,12 +34,18 @@ except Exception as e:
     print(f"[WARN] Background not loaded: {e}")
 
 # == Load skins into a wheel list ==
-skin_names = ["santa", "snowman", "elf"]
-skin_images = [
-    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha(), (70, 80)),
-    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha(), (120, 130)),
-    pygame.transform.scale(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha(), (80, 90))
+def crop_surface(surface):
+    rect = surface.get_bounding_rect()
+    return surface.subsurface(rect).copy()
+
+skins = [
+    crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()),
+    crop_surface(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha()),
+    crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
+
+PREVIEW_SIZE = (90, 100)   #geselecteerde skin
+SMALL_SIZE = (50, 60)       #links/rechts preview
 
 # == Bullet class ==
 class Bullet:
@@ -88,17 +94,23 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
         screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
 
         # 6. Skins (wheel selector)
-        preview = skin_images[selected_index]
-        screen.blit(preview, (WIDTH//2 - preview.get_width()//2, HEIGHT//4 + 320))
+        preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
+        screen.blit(preview,(WIDTH//2 - PREVIEW_SIZE[0]//2, HEIGHT//4 + 320))
 
-        prev_index = (selected_index - 1) % len(skin_images)
-        next_index = (selected_index + 1) % len(skin_images)
+        prev_index = (selected_index - 1) % len(skins)
+        next_index = (selected_index + 1) % len(skins)
 
-        small_prev = pygame.transform.scale(skin_images[prev_index], (40, 50))
-        small_next = pygame.transform.scale(skin_images[next_index], (40, 50))
+        small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
+        small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
 
-        screen.blit(small_prev, (WIDTH//2 - 80, HEIGHT//4 + 380))
-        screen.blit(small_next, (WIDTH//2 + 40, HEIGHT//4 + 380))
+        CENTER_X = WIDTH // 2
+        Y_POS = HEIGHT // 4 + 380
+        SPACING = 100
+
+        screen.blit(preview,(CENTER_X - preview.get_width() // 2, HEIGHT//4 + 320))
+        screen.blit(small_prev,(CENTER_X - SPACING - small_prev.get_width(), Y_POS))
+        screen.blit(small_next,(CENTER_X + SPACING, Y_POS))
+
 
         pygame.display.update()
 
@@ -109,11 +121,11 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    return skin_images[selected_index]  # return the chosen image
+                    return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
-                    selected_index = (selected_index + 1) % len(skin_images)
+                    selected_index = (selected_index + 1) % len(skins)
                 if event.key == pygame.K_LEFT:
-                    selected_index = (selected_index - 1) % len(skin_images)
+                    selected_index = (selected_index - 1) % len(skins)
 
 # == Main Game Loop ==
 highscore = 0

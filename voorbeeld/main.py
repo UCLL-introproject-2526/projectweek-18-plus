@@ -11,9 +11,23 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+# == highscore ==
+highscore = 0
+
+# == Bullet class ==
+class Bullet:
+    def __init__(self, x, y):
+        self.rect = pygame.Rect(x, y, 6, 12)  # small rectangle bullet
+        self.speed = -8  # upward movement
+
+    def update(self):
+        self.rect.y += self.speed
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (255, 255, 255), self.rect)
 # == Load background for start screen ==
 try:
-    background = pygame.image.load("voorbeeld/assets/background.png").convert()
+    background = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
     background = pygame.transform.scale(background, (WIDTH, HEIGHT))
 except Exception as e:
     background = None
@@ -53,24 +67,24 @@ def show_front_screen(screen, highscore, last_score=None):
             screen.fill((0, 0, 50))
 
         # 1. Title
-        title = font_title.render("Santa Dodger", True, (255, 255, 255))
+        title = font_title.render("Santa Dodger", True, (0, 0, 0))
         screen.blit(title, (WIDTH//2 - title.get_width()//2, HEIGHT//4))
 
         # 2. Highscore
-        hs_text = font_text.render(f"Highscore: {highscore}", True, (255, 215, 0))
+        hs_text = font_text.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 80))
 
         # 3. Last score
         if last_score is not None:
-            last_text = font_text.render(f"Last score: {last_score}", True, (200, 200, 200))
+            last_text = font_text.render(f"Last score: {last_score}", True, (0, 0, 0))
             screen.blit(last_text, (WIDTH//2 - last_text.get_width()//2, HEIGHT//4 + 140))
 
         # 4. Press SPACE to start
-        instruction = font_text.render("Press SPACE to start", True, (200, 200, 200))
+        instruction = font_text.render("Press SPACE to start", True, (0, 0, 0))
         screen.blit(instruction, (WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
 
         # 5. Skin select label
-        skin_label = font_text.render("Skin Select:", True, (255, 255, 255))
+        skin_label = font_text.render("Skin Select:", True, (0, 0, 0))
         screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
 
         # 6. Skins (wheel selector)
@@ -131,7 +145,12 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 bullets.append(Bullet(player.rect.centerx, player.rect.top))
 
-        # INPUT
+            # Shooting with left mouse click
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:  # left mouse button
+                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
+
+        # 2. INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 

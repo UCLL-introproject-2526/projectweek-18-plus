@@ -36,6 +36,22 @@ FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf",
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
 FONT_SMALL = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 24)
 
+# === SOUND PATH ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SOUND_PATH = os.path.join(BASE_DIR, "sounds")
+
+try:
+    sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
+    sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
+    sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
+    sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    
+    print("All sounds loaded successfully!")
+
+except pygame.error as e:
+    print("Error loading sounds:", e)
+
+
 # == highscore ==
 highscore = 0
 

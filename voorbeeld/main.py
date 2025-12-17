@@ -6,8 +6,11 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+import os
 
 pygame.init()
+pygame.mixer.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
@@ -199,6 +202,10 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
+                if event.key ==pygame.K_SPACE and not paused:
+                    if ammo > 0:
+                        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                        ammo -= 1
 
         # PAUSED
         if paused:

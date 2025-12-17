@@ -6,7 +6,7 @@ class ReindeerEvent:
     def __init__(self, image):
         self.image = image
         self.rect = self.image.get_rect(midleft=(0, 150))  # start linksboven
-        self.speed = 6
+        self.speed = 4
         self.active = True
         self.start_time = pygame.time.get_ticks()
         self.duration = 20000

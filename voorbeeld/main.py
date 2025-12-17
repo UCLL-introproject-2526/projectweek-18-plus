@@ -296,7 +296,7 @@ while running:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
-        level_speed_multiplier = 1 + (level - 1) * 0.15
+        level_speed_multiplier = 1 + (level - 1) * 0.5
 
         reindeer_speed_multiplier = 1
 
@@ -313,7 +313,7 @@ while running:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
-        gift_speed_multiplier = 1 + (level - 1) * 0.15
+        gift_speed_multiplier = 1 + (level - 1) * 0.3
         for gift in gifts:
             gift.update(gift_speed_multiplier)
 
@@ -400,6 +400,12 @@ while running:
             reindeer_event.update() 
             reindeer_event.draw(screen)
 
+        dark_overlay = pygame.Surface((WIDTH, HEIGHT))
+        dark_overlay.set_alpha(200) 
+        dark_overlay.fill((0, 0, 0)) 
+
+        if  500 <= score.value <= 600 and score.value:
+            screen.blit(dark_overlay, (0, 0))
 
         pygame.display.update()
 

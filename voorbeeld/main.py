@@ -244,7 +244,7 @@ while running:
 
         # COLLISIONS
         for obs in obstacles[:]:
-            if player.rect.colliderect(obs.rect):
+            if player.hitbox.colliderect(obs.rect):
                 game_active = False
 
         for gift in gifts[:]:

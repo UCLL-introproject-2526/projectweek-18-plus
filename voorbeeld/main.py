@@ -209,7 +209,7 @@ while running:
     # 1. Start screen
     chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
     pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
-    pygame.mixer.music.set_volume(0.7)   
+    pygame.mixer.music.set_volume(0.7)     
     pygame.mixer.music.play(-1)
 
     #uitleg scherm

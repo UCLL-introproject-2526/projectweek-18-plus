@@ -8,7 +8,7 @@ class Player:
         self.height = 70
         self.x = WIDTH // 2
         self.y = HEIGHT - 80
-        self.speed = 6
+        self.speed = 4
 
         PLAYER_SIZE = (60, 70)
         self.image = pygame.transform.scale(image, PLAYER_SIZE)

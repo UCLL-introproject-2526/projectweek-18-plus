@@ -39,10 +39,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOUND_PATH = os.path.join(BASE_DIR, "sounds")
 
 try:
-    # sound_intro = pygame.mixer.Sound(os.path.join("voorbeeld/sound/ho-ho-ho-merry-christmas-439603.wav"))
-    # sound_game_over = pygame.mixer.Sound(os.path.join("voorbeeld/sound/game-over-417465.wav"))
-    # sound_catch = pygame.mixer.Sound(os.path.join("voorbeeld/sound/christmas-chimes-whoosh-264365.wav"))
-    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
+    sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
+    sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
+    # hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
     
     print("All sounds loaded successfully!")
 
@@ -93,7 +93,7 @@ class Bullet:
 def show_front_screen(screen, start_background, highscore, last_score=None):
     selected_index = 0  # start with santa
 
-    # sound_intro.play()
+    sound_intro.play()
 
     while True:
         if start_background:
@@ -147,7 +147,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    # sound_intro.stop()
+                    sound_intro.stop()
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
@@ -287,14 +287,14 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
-                # sound_game_over.play()
+                sound_game_over.play()
                 pygame.time.delay(100)
                 game_active = False
                 break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
-                # sound_catch.play()
+                sound_catch.play()
                 score.add(10)
                 ammo += 3
                 gifts.remove(gift)

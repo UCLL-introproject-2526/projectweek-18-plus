@@ -9,7 +9,7 @@ class ReindeerEvent:
         self.speed = 4
         self.active = True
         self.start_time = pygame.time.get_ticks()
-        self.duration = 20000
+        self.duration = 10000
 
     def update(self):
         self.rect.x += self.speed

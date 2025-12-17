@@ -26,7 +26,7 @@ pygame.display.update()
 
 # == Rendeir event ==
 REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
-REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE,(REINDEER_IMAGE.get_width() // 10, REINDEER_IMAGE.get_height() // 10))
+REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE,(REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
 
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)

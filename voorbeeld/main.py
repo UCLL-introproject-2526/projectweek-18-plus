@@ -184,6 +184,12 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
+                
+                if event.key ==pygame.K_SPACE and not paused:
+                    if ammo > 0:
+                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                         ammo -= 1
+                        
         
         # PAUSED
         if paused:

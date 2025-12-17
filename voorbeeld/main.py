@@ -15,7 +15,6 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
-<<<<<<< HEAD
 # == Loading screen == 
 screen.fill((30, 30, 60))
 
@@ -32,8 +31,6 @@ pygame.display.update()
 REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
 REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE,(REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
 
-=======
->>>>>>> 83fb47e4d4de7a099ec57ba42732ab66d53287a0
 # === SOUND PATH ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOUND_PATH = os.path.join(BASE_DIR, "sounds")
@@ -43,10 +40,7 @@ try:
     sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
     sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "christmas-chimes-whoosh-264365.wav"))
-<<<<<<< HEAD
     sound_shoot = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
-=======
->>>>>>> 83fb47e4d4de7a099ec57ba42732ab66d53287a0
     print("All sounds loaded successfully!")
 except pygame.error as e:
     print("Error loading sounds:", e)

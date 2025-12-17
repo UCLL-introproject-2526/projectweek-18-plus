@@ -265,7 +265,6 @@ while running:
             continue  # skip updates while paused
         
         # NEW BACKGROUNDS
-
         keys = pygame.key.get_pressed()
         player.move(keys)
     

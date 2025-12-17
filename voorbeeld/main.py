@@ -12,6 +12,19 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+# === SOUND PATH ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SOUND_PATH = os.path.join(BASE_DIR, "sounds")
+
+# === LOAD SOUNDS ===
+try:
+    sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
+    sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
+    sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "christmas-chimes-whoosh-264365.wav"))
+    print("All sounds loaded successfully!")
+except pygame.error as e:
+    print("Error loading sounds:", e)
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)

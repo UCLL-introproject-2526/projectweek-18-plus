@@ -27,6 +27,9 @@ try:
     sound_game_over.set_volume(1.0)
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
     sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    sound_level_up = pygame.mixer.Sound(os.path.join(SOUND_PATH, "gluckg-101258.wav"))
+    sound_level_up.set_volume(1.0)  # maximaal volume
+
     print("All sounds loaded successfully!")
 except pygame.error as e:
     print("Error loading sounds:", e)
@@ -247,6 +250,7 @@ while running:
         new_level = score.value // level_threshold + 1
         if new_level != level:
             level = new_level
+            sound_level_up.play()
             show_level_up = True
             level_up_timer = LEVEL_UP_DURATION
 

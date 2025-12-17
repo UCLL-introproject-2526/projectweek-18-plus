@@ -12,6 +12,7 @@ class Player:
         PLAYER_SIZE = (60, 70)
         self.image = pygame.transform.scale(image, PLAYER_SIZE)
         self.rect = self.image.get_rect(midbottom=(WIDTH//2, HEIGHT - 10))
+        self.hitbox = self.rect.inflate(-20, -15)
 
     def move(self, keys):
         if keys[pygame.K_LEFT]:
@@ -19,6 +20,7 @@ class Player:
         if keys[pygame.K_RIGHT]:
             self.rect.x += self.speed
         self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
+        self.hitbox.center = self.rect.center
 
     def draw(self, screen, keys):
         if keys[pygame.K_LEFT]:

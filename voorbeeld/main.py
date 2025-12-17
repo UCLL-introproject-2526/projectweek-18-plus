@@ -244,11 +244,11 @@ while running:
 
         # COLLISIONS
         for obs in obstacles[:]:
-            if player.rect.colliderect(obs.rect):
+            if player.hitbox.colliderect(obs.rect):
                 game_active = False
 
         for gift in gifts[:]:
-            if player.rect.colliderect(gift.rect):
+            if player.hitbox.colliderect(gift.rect):
                 score.add(10)
                 gifts.remove(gift)
                 ammo += 3

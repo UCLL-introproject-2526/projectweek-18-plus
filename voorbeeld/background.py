@@ -3,23 +3,29 @@ from settings import WIDTH, HEIGHT
 
 class Background:
     def __init__(self):
-        # Laad de originele afbeelding
+        self.background_files = [
+            "voorbeeld/assets/background_game.png",
+            "voorbeeld/assets/secondbackground_game.png"
+        ]
+        self.current_index = 0
+        self.images = []
 
-        img = pygame.image.load("voorbeeld/assets/background_game.png").convert_alpha()
+        for file in self.background_files:
+            try:
+                img = pygame.image.load(file).convert_alpha()
+                self.images.append(pygame.transform.scale(img, (WIDTH, HEIGHT)))
+                print(f"Succes: {file} geladen") 
+            except Exception as e:
+                print(f"Fout: Kan {file} niet laden. Error: {e}")
+                surf = pygame.Surface((WIDTH, HEIGHT))
+                surf.fill((255, 0, 0))
+                self.images.append(surf)
 
-        # Maak de afbeelding iets breder en langer
-        new_width = int(WIDTH * 1.1)   # 10% breder
-        new_height = int(HEIGHT * 1.1) # 10% langer
-        self.image = pygame.transform.scale(img, (new_width, new_height))
-
-        # Offset om boven links te beginnen
-        self.offset_x = (new_width - WIDTH) // 2
-        self.offset_y = (new_height - HEIGHT) // 2
+    def next_level(self):
+        self.current_index = (self.current_index + 1) % len(self.images)
 
     def render(self, screen):
-        # Teken de achtergrond met de offset zodat het scherm gevuld is
-        screen.blit(self.image, (-self.offset_x, -self.offset_y))
-
+        screen.blit(self.images[self.current_index], (0, 0))
 
 
 #class Snow:

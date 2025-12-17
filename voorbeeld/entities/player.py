@@ -22,7 +22,6 @@ class Player:
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
         
-        self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
         self.hitbox.center = self.rect.center
 
     def draw(self, screen, keys):

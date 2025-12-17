@@ -6,16 +6,49 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+import os
 
 pygame.init()
+pygame.mixer.init()
+
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
+
+# == Loading screen == 
+screen.fill((30, 30, 60))
+
+loading_font = pygame.font.SysFont(None, 40)
+loading_text = loading_font.render("Loading...", True, (255, 255, 255))
+screen.blit(loading_text, loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
+
+pygame.display.update()
+
+
+# == Rendeir event ==
+REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
+REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
 
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
 FONT_SMALL = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 24)
+
+# === SOUND PATH ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SOUND_PATH = os.path.join(BASE_DIR, "sounds")
+
+try:
+    # sound_intro = pygame.mixer.Sound(os.path.join("voorbeeld/sound/ho-ho-ho-merry-christmas-439603.wav"))
+    # sound_game_over = pygame.mixer.Sound(os.path.join("voorbeeld/sound/game-over-417465.wav"))
+    # sound_catch = pygame.mixer.Sound(os.path.join("voorbeeld/sound/christmas-chimes-whoosh-264365.wav"))
+    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    
+    print("All sounds loaded successfully!")
+
+except pygame.error as e:
+    print("Error loading sounds:", e)
+
 
 # == highscore ==
 highscore = 0
@@ -27,7 +60,8 @@ try:
     start_background = pygame.transform.scale(start_background, (WIDTH, HEIGHT))
 except Exception as e:
     background = None
-    print(f"[WARN] Background not loaded: {e}")
+    print(f"[WARN] Background not loaded {e}")
+
 
 # == Load skins into a wheel list ==
 def crop_surface(surface):
@@ -35,14 +69,13 @@ def crop_surface(surface):
     return surface.subsurface(rect).copy()
 
 skins = [
-    crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png",).convert_alpha()),
+    crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()),
     crop_surface(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha()),
     crop_surface(pygame.image.load("voorbeeld/assets/Elf.png").convert_alpha())
 ]
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
-SMALL_SIZE = (50, 60)       #links/rechts preview
-
+SMALL_SIZE = (50, 60)       #linksrechts preview
 
 # == Bullet class ==
 class Bullet:
@@ -58,8 +91,9 @@ class Bullet:
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-
     selected_index = 0  # start with santa
+
+    # sound_intro.play()
 
     while True:
         if start_background:
@@ -68,27 +102,27 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
             screen.fill((0, 0, 50))
 
         title = FONT_TITLE.render("Santa Dodger", True, (0, 0, 0))
-        screen.blit(title,(WIDTH//2 - title.get_width()//2, HEIGHT//4))
+        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 4))
 
         hs_text = FONT_TEXT.render(f"Highscore: {highscore}", True, (130, 5, 24))
-        screen.blit(hs_text,(WIDTH//2 - hs_text.get_width()//2, HEIGHT//4 + 90))
+        screen.blit(hs_text, (WIDTH // 2 - hs_text.get_width() // 2, HEIGHT // 4 + 90))
 
         instruction = FONT_SMALL.render("Press SPACE to start", True, (0, 0, 0))
-        screen.blit(instruction,(WIDTH//2 - instruction.get_width()//2, HEIGHT//4 + 200))
+        screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 4 + 200))
 
         # Last score
         if last_score is not None:
             last_text = FONT_SMALL.render(f"Last score: {last_score}", True, (0, 0, 0))
-            screen.blit(last_text, (WIDTH//2 - last_text.get_width()//2, HEIGHT//4 + 140))
+            screen.blit(last_text, (WIDTH // 2 - last_text.get_width() // 2, HEIGHT // 4 + 140))
 
 
         # Skin select label
         skin_label = FONT_SMALL.render("Skin Select:", True, (0, 0, 0))
-        screen.blit(skin_label, (WIDTH//2 - skin_label.get_width()//2, HEIGHT//4 + 260))
+        screen.blit(skin_label, (WIDTH // 2 - skin_label.get_width() // 2, HEIGHT // 4 + 260))
 
         # Skins (wheel selector)
         preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
-        screen.blit(preview,(WIDTH//2 - PREVIEW_SIZE[0]//2, HEIGHT//4 + 320))
+        screen.blit(preview, (WIDTH // 2 - PREVIEW_SIZE[0] // 2, HEIGHT // 4 + 320))
 
         prev_index = (selected_index - 1) % len(skins)
         next_index = (selected_index + 1) % len(skins)
@@ -100,10 +134,9 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
         Y_POS = HEIGHT // 4 + 380
         SPACING = 100
 
-        screen.blit(preview,(CENTER_X - preview.get_width() // 2, HEIGHT//4 + 320))
-        screen.blit(small_prev,(CENTER_X - SPACING - small_prev.get_width(), Y_POS))
-        screen.blit(small_next,(CENTER_X + SPACING, Y_POS))
-
+        screen.blit(preview, (CENTER_X - preview.get_width() // 2, HEIGHT // 4 + 320))
+        screen.blit(small_prev, (CENTER_X - SPACING - small_prev.get_width(), Y_POS))
+        screen.blit(small_next, (CENTER_X + SPACING, Y_POS))
 
         pygame.display.update()
 
@@ -114,28 +147,31 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    # sound_intro.stop()
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skins)
 
+
 # == End Screen ==
 
 def draw_text_outline(font, text, color, outline, x, y):
-        text_surf = font.render(text, True, color)
-        outline_surf = font.render(text, True, outline)
-        text_rect = text_surf.get_rect(center=(x, y))
+    text_surf = font.render(text, True, color)
+    outline_surf = font.render(text, True, outline)
+    text_rect = text_surf.get_rect(center=(x, y))
 
-        for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
-           screen.blit(outline_surf, text_rect.move(dx, dy))
+    for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
+        screen.blit(outline_surf, text_rect.move(dx, dy))
 
-        screen.blit(text_surf, text_rect)
+    screen.blit(text_surf, text_rect)
+
 
 def show_game_over(screen, score_value):
-    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH//2, HEIGHT//2)
+    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH // 2, HEIGHT // 2)
     score_text = FONT_TEXT.render(f"Score: {score_value}", True, (0, 0, 0))
-    score_rect = score_text.get_rect(center=(WIDTH//2, HEIGHT//2 + 60))
+    score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
     screen.blit(score_text, score_rect)
     pygame.display.update()
     pygame.time.wait(2000)
@@ -166,6 +202,11 @@ while running:
     score_timer = 0
     speed_multiplier = 1
     paused = False
+    reindeer_spawned = False
+    level = 0
+    level_threshold = 50
+    LEVEL_UP_DURATION = 60
+    show_level_up = False
 
     # 3. Main game loop
     game_active = True
@@ -185,44 +226,38 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
-                
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
-                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
-                         ammo -= 1
-                        
-        
+                        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                        ammo -= 1
+
         # PAUSED
         if paused:
             font = pygame.font.SysFont(None, 64)
             pause_text = font.render("PAUSED - Press P to Resume", True, (255, 255, 0))
-            screen.blit(pause_text, (WIDTH//2 - pause_text.get_width()//2, HEIGHT//2))
+            screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
             pygame.display.update()
             continue  # skip updates while paused
+
+        # LEVELS
+        new_level = score.value // level_threshold + 1
+        if new_level != level:
+            level = new_level
+            show_level_up = True
+            level_up_timer = LEVEL_UP_DURATION
+
+        spawn_rate = max(10, span_rate_base - (level - 1) * 5)  # spawn rate sneller per level
 
         # INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 
-        # UPDATE OBJECTS (fixed ordering)
-        if score.value > 250:
-            spawn_rate = 10
-        elif score.value > 200:
-            spawn_rate = 20
-        elif score.value > 150:
-            spawn_rate = 30
-        elif score.value > 100:
-            spawn_rate = 40
-        elif score.value > 50:
-            spawn_rate = 50
-        else:
-            spawn_rate = span_rate_base
-
+        # UPDATE OBJECTS 
         spawn_timer += 1
-        if spawn_timer > spawn_rate:
+        if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
             spawn_timer = 0
-        
+
         if reindeer_event is not None and reindeer_event.active:
             speed_multiplier = 2
         else:
@@ -232,7 +267,7 @@ while running:
             obs.update(speed_multiplier)
 
         gift_spawn_timer += 1
-        if gift_spawn_timer > 200:
+        if gift_spawn_timer >= 200:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
@@ -252,13 +287,17 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
+                # sound_game_over.play()
+                pygame.time.delay(100)
                 game_active = False
+                break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
+                # sound_catch.play()
                 score.add(10)
-                gifts.remove(gift)
                 ammo += 3
+                gifts.remove(gift)
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -267,14 +306,16 @@ while running:
                     bullets.remove(bullet)
                     score.add(5)
                     break
-        
+
         if score.value >= 200 and score.value <= 215 and reindeer_event is None:
-            reindeer_event = ReindeerEvent()
+            reindeer_event = ReindeerEvent(REINDEER_IMAGE)
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5
+
         else:
             spawn_rate = span_rate_base
+
         
         if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
@@ -288,17 +329,27 @@ while running:
         ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
         screen.blit(ammo_text, (10, 40))
 
+        if show_level_up:
+            # level_up_text = FONT_TITLE.render(f"LEVEL {level}!", True, (255, 255, 0))
+            x = WIDTH // 2
+            y = HEIGHT // 2
+            # screen.blit(level_up_text, (WIDTH // 2 - level_up_text.get_width() // 2, HEIGHT // 2))
+            draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
+
+            level_up_timer -= 1
+            if level_up_timer <= 0:
+                show_level_up = False
+
+
         for obs in obstacles:
             obs.draw(screen)
         for gift in gifts:
             gift.draw(screen)
         for bullet in bullets:
             bullet.draw(screen)
-        
 
-
-        if reindeer_event is not None and reindeer_event.active:
-            reindeer_event.update()
+        if reindeer_event is not None and reindeer_event.active: 
+            reindeer_event.update() 
             reindeer_event.draw(screen)
 
 

@@ -248,7 +248,7 @@ while running:
                 game_active = False
 
         for gift in gifts[:]:
-            if player.rect.colliderect(gift.rect):
+            if player.hitbox.colliderect(gift.rect):
                 score.add(10)
                 gifts.remove(gift)
                 ammo += 3

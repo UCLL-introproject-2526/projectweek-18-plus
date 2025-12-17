@@ -6,15 +6,13 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
-import os
 
 pygame.init()
-pygame.mixer.init()
-
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+<<<<<<< HEAD
 # == Loading screen == 
 screen.fill((30, 30, 60))
 
@@ -45,6 +43,8 @@ try:
 except pygame.error as e:
     print("Error loading sounds:", e)
 
+=======
+>>>>>>> 153d1fa018df5d204b3892247e0e3a0b2775def3
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -92,8 +92,6 @@ class Bullet:
 def show_front_screen(screen, start_background, highscore, last_score=None):
 
     selected_index = 0  # start with santa
-
-    sound_intro.play()
 
     while True:
         if start_background:
@@ -289,14 +287,10 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
-                sound_game_over.play()
-                pygame.time.delay(100)  # voorkomt spam
                 game_active = False
-                break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
-                sound_catch.play()
                 score.add(10)
                 gifts.remove(gift)
                 ammo += 3
@@ -310,7 +304,7 @@ while running:
                     break
         
         if score.value >= 200 and score.value <= 215 and reindeer_event is None:
-            reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+            reindeer_event = ReindeerEvent()
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

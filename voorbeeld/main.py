@@ -227,8 +227,8 @@ while running:
     score = Score()
 
     gift_spawn_timer = 0
-    spawn_rate = 60
-    span_rate_base = 60
+    spawn_rate = 80
+    span_rate_base = 80
     ammo = 10
     spawn_timer = 0
     score_timer = 0
@@ -316,7 +316,7 @@ while running:
             spawn_timer = 0
 
         gift_spawn_timer += 1
-        if gift_spawn_timer >= 2 * spawn_rate:
+        if gift_spawn_timer >= 3 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
 

@@ -217,6 +217,7 @@ while running:
     speed_multiplier = 1
     paused = False
     reindeer_spawned = False
+    next_reindeer_score = 200
     level = 0
     level_threshold = 50
     LEVEL_UP_DURATION = 60
@@ -264,7 +265,7 @@ while running:
             show_level_up = True
             level_up_timer = LEVEL_UP_DURATION
 
-        spawn_rate = max(10, span_rate_base - (level - 1) * 5)  # spawn rate sneller per level
+        spawn_rate = max(10, span_rate_base - (level - 1) * 5)
 
         # INPUT
         keys = pygame.key.get_pressed()
@@ -276,21 +277,26 @@ while running:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
+        level_speed_multiplier = 1 + (level - 1) * 0.15
+
+        reindeer_speed_multiplier = 1
+
         if reindeer_event is not None and reindeer_event.active:
-            speed_multiplier = 2
-        else:
-            speed_multiplier = 1
+            reindeer_speed_multiplier = 2
+
+        total_speed_multiplier = level_speed_multiplier * reindeer_speed_multiplier
 
         for obs in obstacles:
-            obs.update(speed_multiplier)
+            obs.update(total_speed_multiplier)
 
         gift_spawn_timer += 1
         if gift_spawn_timer >= 200:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
+        gift_speed_multiplier = 1 + (level - 1) * 0.15
         for gift in gifts:
-            gift.update()
+            gift.update(gift_speed_multiplier)
 
         score_timer += 1
         if score_timer >= FPS:
@@ -325,8 +331,13 @@ while running:
                     score.add(5)
                     break
 
-        if score.value >= 200 and score.value <= 215 and reindeer_event is None:
+        # if score.value != 0 and score.value % 50 == 0 and score.value != last_reindeer_score and reindeer_event is None:
+        #     reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+        #     last_reindeer_score = score.value
+
+        if score.value >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+            next_reindeer_score += 200
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

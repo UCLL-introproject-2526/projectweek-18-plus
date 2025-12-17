@@ -3,10 +3,11 @@ from settings import WIDTH, HEIGHT
 from pygame.display import flip
 
 class ReindeerEvent:
-    def __init__(self, image):
-        self.image = image
-        self.rect = self.image.get_rect(midleft=(-100, 150))  # start linksboven
-        self.speed = 3
+    def __init__(self):
+        self.image = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (self.image.get_width()//10, self.image.get_height()//10))
+        self.rect = self.image.get_rect(midleft=(0, 150))  # start linksboven
+        self.speed = 6
         self.active = True
         self.start_time = pygame.time.get_ticks()
         self.duration = 20000

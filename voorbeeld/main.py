@@ -84,6 +84,9 @@ skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
 
+selected_skin_index =0
+
+
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
 
@@ -101,7 +104,9 @@ class Bullet:
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-    selected_index = 0  # start with santa
+    global selected_skin_index
+    selected_index = 0 # start with santa
+    selected_index = selected_skin_index
 
     sound_intro.play()
 
@@ -158,6 +163,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     sound_intro.stop()
+                    selected_skin_index = selected_index
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
@@ -219,7 +225,7 @@ while running:
     #  pygame.event.clear()
 
     #2. Initialize game    
-    player = Player(chosen_image)
+    player = Player(skins[selected_skin_index])
     obstacles = []
     gifts = []
     bullets = [] 

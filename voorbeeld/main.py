@@ -307,13 +307,15 @@ while running:
                     score.add(5)
                     break
 
-        if score.value >= 50 and score.value <= 215 and reindeer_event is None:
+        if score.value >= 200 and score.value <= 215 and reindeer_event is None:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5
+
         else:
             spawn_rate = span_rate_base
+
         
         if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None

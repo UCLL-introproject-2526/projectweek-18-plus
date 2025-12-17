@@ -40,7 +40,7 @@ SOUND_PATH = os.path.join(BASE_DIR, "sounds")
 
 try:
     sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
-    sound_intro.set_volume(0.80)
+    sound_intro.set_volume(0.70)
     sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
     sound_game_over.set_volume(1.0)
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
@@ -313,27 +313,30 @@ while running:
         player.move(keys)
 
         # UPDATE OBJECTS 
+        
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
-        level_speed_multiplier = 1 + (level - 1) * 0.5
+        gift_spawn_timer += 1
+        if gift_spawn_timer >= 2 * spawn_rate:
+            gifts.append(Gift())
+            gift_spawn_timer = 0
+
+        level_speed_multiplier = 1 + (level - 1) * 0.3
 
         reindeer_speed_multiplier = 1
 
         if reindeer_event is not None and reindeer_event.active:
             reindeer_speed_multiplier = 2
+            gift_spawn_timer += spawn_rate * 0.1 
+            spawn_timer += spawn_rate * 0.05
 
         total_speed_multiplier = level_speed_multiplier * reindeer_speed_multiplier
 
         for obs in obstacles:
             obs.update(total_speed_multiplier)
-
-        gift_spawn_timer += 1
-        if gift_spawn_timer >= 200:
-            gifts.append(Gift())
-            gift_spawn_timer = 0
 
         gift_speed_multiplier = 1 + (level - 1) * 0.3
         for gift in gifts:

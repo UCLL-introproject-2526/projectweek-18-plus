@@ -1,36 +1,32 @@
 import pygame
 from settings import WIDTH, HEIGHT
+from pygame.display import flip
 
 class Player:
     def __init__(self, image):
         self.width = 60
         self.height = 70
-        self.speed = 6
+        self.x = WIDTH // 2
+        self.y = HEIGHT - 80
+        self.speed = 4
 
         PLAYER_SIZE = (60, 70)
         self.image = pygame.transform.scale(image, PLAYER_SIZE)
 
-        self.rect = self.image.get_rect(midbottom=(WIDTH // 2, HEIGHT - 10))
+        self.rect = self.image.get_rect(midbottom=(WIDTH//2, HEIGHT - 10))
         self.hitbox = self.rect.inflate(-20, -15)
 
     def move(self, keys):
-        # Move left (Q or LEFT arrow)
-        if keys[pygame.K_q] or keys[pygame.K_LEFT]:
+        if keys[pygame.K_LEFT] or keys[pygame.K_q]:
             self.rect.x -= self.speed
-
-        # Move right (D or RIGHT arrow)
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             self.rect.x += self.speed
-
-        # Keep player inside screen
-        self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
+        
         self.hitbox.center = self.rect.center
 
     def draw(self, screen, keys):
-        # Flip sprite when moving left (Q or LEFT)
-        if keys[pygame.K_q] or keys[pygame.K_LEFT]:
-            flipped_image = pygame.transform.flip(self.image, True, False)
-            screen.blit(flipped_image, self.rect)
+        if keys[pygame.K_LEFT]:
+            screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
         else:
             screen.blit(self.image, self.rect)
 

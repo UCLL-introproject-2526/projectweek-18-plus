@@ -7,7 +7,7 @@ class Obstacle:
         self.size = 30
         self.x = random.randint(0, WIDTH - self.size)
         self.y = -self.size
-        self.speed = random.randint(4, 6)
+        self.speed = random.randint(3, 6)
 
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 

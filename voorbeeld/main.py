@@ -228,6 +228,8 @@ while running:
                 if event.key == pygame.K_SPACE:
                     waiting_for_space = False
 
+    #  pygame.event.clear()
+
     #2. Initialize game    
     player = Player(chosen_image)
     obstacles = []
@@ -235,6 +237,7 @@ while running:
     bullets = [] 
     background = Background()
     score = Score()
+
     gift_spawn_timer = 0
     spawn_rate = 60
     span_rate_base = 60
@@ -287,6 +290,26 @@ while running:
             screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
             pygame.display.update()
             continue  # skip updates while paused
+        
+        # NEW BACKGROUNDS
+
+        keys = pygame.key.get_pressed()
+        player.move(keys)
+    
+        if player.rect.left > WIDTH:
+            background.next_level()  
+            player.rect.right = 0    
+            
+    
+            obstacles.clear()
+            gifts.clear()
+            bullets.clear()
+
+        elif player.rect.right < 0:
+            background.next_level()
+            player.rect.left = WIDTH
+            obstacles.clear()
+
 
         # LEVELS
         new_level = score.value // level_threshold + 1

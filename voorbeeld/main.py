@@ -28,7 +28,9 @@ try:
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
     sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
     sound_level_up = pygame.mixer.Sound(os.path.join(SOUND_PATH, "fairy-sparkle-451414.wav"))
-    sound_level_up.set_volume(1.0)  # maximaal volume
+    sound_level_up.set_volume(1.0)
+    sound_pause = pygame.mixer.Sound(os.path.join(SOUND_PATH, "bell-98033.wav"))
+    sound_pause.set_volume(0.9)
 
     print("All sounds loaded successfully!")
 except pygame.error as e:
@@ -45,9 +47,16 @@ SOUND_PATH = os.path.join(BASE_DIR, "sounds")
 
 try:
     sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
+    sound_intro.set_volume(0.80)
     sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
+    sound_game_over.set_volume(1.0)
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
     sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    sound_level_up = pygame.mixer.Sound(os.path.join(SOUND_PATH, "fairy-sparkle-451414.wav"))
+    sound_level_up.set_volume(1.0)
+    sound_pause = pygame.mixer.Sound(os.path.join(SOUND_PATH, "bell-98033.wav"))
+    sound_pause.set_volume(0.9)
+
     
     print("All sounds loaded successfully!")
 
@@ -232,6 +241,7 @@ while running:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
+                    sound_pause.play()
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
                         bullets.append(Bullet(player.rect.centerx, player.rect.top))

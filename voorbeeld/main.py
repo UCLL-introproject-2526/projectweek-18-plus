@@ -39,11 +39,21 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOUND_PATH = os.path.join(BASE_DIR, "sounds")
 
 try:
-    # sound_intro = pygame.mixer.Sound(os.path.join("voorbeeld/sound/ho-ho-ho-merry-christmas-439603.wav"))
-    # sound_game_over = pygame.mixer.Sound(os.path.join("voorbeeld/sound/game-over-417465.wav"))
-    # sound_catch = pygame.mixer.Sound(os.path.join("voorbeeld/sound/christmas-chimes-whoosh-264365.wav"))
-    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
-    
+    sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
+    sound_intro.set_volume(0.70)
+    sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
+    sound_game_over.set_volume(1.0)
+    sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
+    sound_catch.set_volume(0.80)
+    sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    sound_level_up = pygame.mixer.Sound(os.path.join(SOUND_PATH, "fairy-sparkle-451414.wav"))
+    sound_level_up.set_volume(1.0)
+    sound_pause = pygame.mixer.Sound(os.path.join(SOUND_PATH, "bell-98033.wav"))
+    sound_pause.set_volume(0.9)
+    pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(-1)
+
     print("All sounds loaded successfully!")
 
 except pygame.error as e:
@@ -93,7 +103,7 @@ class Bullet:
 def show_front_screen(screen, start_background, highscore, last_score=None):
     selected_index = 0  # start with santa
 
-    # sound_intro.play()
+    sound_intro.play()
 
     while True:
         if start_background:
@@ -147,7 +157,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    # sound_intro.stop()
+                    sound_intro.stop()
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
@@ -206,6 +216,7 @@ while running:
                 if event.key == pygame.K_SPACE:
                     waiting_for_space = False
 
+    #  pygame.event.clear()
 
     #2. Initialize game    
     player = Player(chosen_image)
@@ -214,6 +225,7 @@ while running:
     bullets = [] 
     background = Background()
     score = Score()
+
     gift_spawn_timer = 0
     spawn_rate = 60
     span_rate_base = 60
@@ -223,6 +235,11 @@ while running:
     speed_multiplier = 1
     paused = False
     reindeer_spawned = False
+    next_reindeer_score = 200
+    level = 0
+    level_threshold = 50
+    LEVEL_UP_DURATION = 60
+    show_level_up = False
 
     # 3. Main game loop
     game_active = True
@@ -239,13 +256,20 @@ while running:
                 if ammo > 0: 
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
                     ammo -= 1
+                    sound_throw.play()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
+                    sound_pause.play()
+                    if paused:
+                     pygame.mixer.music.set_volume(0.1)
+                    else:
+                     pygame.mixer.music.set_volume(0.25)
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
                         ammo -= 1
+                        sound_throw.play()
 
         # PAUSED
         if paused:
@@ -254,45 +278,69 @@ while running:
             screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
             pygame.display.update()
             continue  # skip updates while paused
+        
+        # NEW BACKGROUNDS
+        keys = pygame.key.get_pressed()
+        player.move(keys)
+    
+        if player.rect.left > WIDTH:
+            background.next_level()  
+            player.rect.right = 0    
+            
+    
+            obstacles.clear()
+            gifts.clear()
+            bullets.clear()
+
+        elif player.rect.right < 0:
+            background.next_level()
+            player.rect.left = WIDTH
+            obstacles.clear()
+
+
+        # LEVELS
+        new_level = score.value // level_threshold + 1
+        if new_level != level:
+            level = new_level
+            sound_level_up.play()
+            show_level_up = True
+            level_up_timer = LEVEL_UP_DURATION
+
+        spawn_rate = max(10, span_rate_base - (level - 1) * 5)
 
         # INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 
-        # UPDATE OBJECTS (fixed ordering)
-        if score.value > 250:
-            spawn_rate = 10
-        elif score.value > 200:
-            spawn_rate = 20
-        elif score.value > 150:
-            spawn_rate = 30
-        elif score.value > 100:
-            spawn_rate = 40
-        elif score.value > 50:
-            spawn_rate = 50
-        else:
-            spawn_rate = span_rate_base
-
+        # UPDATE OBJECTS 
+        
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
-        if reindeer_event is not None and reindeer_event.active:
-            speed_multiplier = 2
-        else:
-            speed_multiplier = 1
-
-        for obs in obstacles:
-            obs.update(speed_multiplier)
-
         gift_spawn_timer += 1
-        if gift_spawn_timer >= 200:
+        if gift_spawn_timer >= 2 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
+        level_speed_multiplier = 1 + (level - 1) * 0.3
+
+        reindeer_speed_multiplier = 1
+
+        if reindeer_event is not None and reindeer_event.active:
+            reindeer_speed_multiplier = 2
+            gift_spawn_timer += spawn_rate * 0.1 
+            spawn_timer += spawn_rate * 0.05
+
+        total_speed_multiplier = level_speed_multiplier * reindeer_speed_multiplier
+
+        for obs in obstacles:
+            obs.update(total_speed_multiplier)
+
+        gift_speed_multiplier = 1 + (level - 1) * 0.3
         for gift in gifts:
-            gift.update()
+            gift.update(gift_speed_multiplier)
 
         score_timer += 1
         if score_timer >= FPS:
@@ -307,14 +355,14 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
-                # sound_game_over.play()
+                sound_game_over.play()
                 pygame.time.delay(100)
                 game_active = False
                 break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
-                # sound_catch.play()
+                sound_catch.play()
                 score.add(10)
                 ammo += 3
                 gifts.remove(gift)
@@ -327,13 +375,20 @@ while running:
                     score.add(5)
                     break
 
-        if score.value >= 50 and score.value <= 215 and reindeer_event is None:
+        # if score.value != 0 and score.value % 50 == 0 and score.value != last_reindeer_score and reindeer_event is None:
+        #     reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+        #     last_reindeer_score = score.value
+
+        if score.value >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+            next_reindeer_score += 200
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5
+
         else:
             spawn_rate = span_rate_base
+
         
         if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
@@ -347,6 +402,18 @@ while running:
         ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
         screen.blit(ammo_text, (10, 40))
 
+        if show_level_up:
+            # level_up_text = FONT_TITLE.render(f"LEVEL {level}!", True, (255, 255, 0))
+            x = WIDTH // 2
+            y = HEIGHT // 2
+            # screen.blit(level_up_text, (WIDTH // 2 - level_up_text.get_width() // 2, HEIGHT // 2))
+            draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
+
+            level_up_timer -= 1
+            if level_up_timer <= 0:
+                show_level_up = False
+
+
         for obs in obstacles:
             obs.draw(screen)
         for gift in gifts:
@@ -358,6 +425,12 @@ while running:
             reindeer_event.update() 
             reindeer_event.draw(screen)
 
+        dark_overlay = pygame.Surface((WIDTH, HEIGHT))
+        dark_overlay.set_alpha(200) 
+        dark_overlay.fill((0, 0, 0)) 
+
+        if  500 <= score.value <= 600 and score.value:
+            screen.blit(dark_overlay, (0, 0))
 
         pygame.display.update()
 

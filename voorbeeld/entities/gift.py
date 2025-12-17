@@ -7,7 +7,7 @@ class Gift:
         self.size = 40
         self.x = random.randint(0, WIDTH - self.size)
         self.y = -self.size
-        self.speed = random.randint(2, 3)
+        self.speed = random.randint(3, 5)
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
         gift_images = [
@@ -21,8 +21,8 @@ class Gift:
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
 
-    def update(self,):
-        self.rect.y += self.speed
+    def update(self, multiplier = 1):
+        self.rect.y += self.speed * 1
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)

@@ -15,7 +15,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
-# === SOUND PATH ===
+# === SOUND PATH === 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOUND_PATH = os.path.join(BASE_DIR, "sounds")
 
@@ -31,6 +31,10 @@ try:
     sound_level_up.set_volume(1.0)
     sound_pause = pygame.mixer.Sound(os.path.join(SOUND_PATH, "bell-98033.wav"))
     sound_pause.set_volume(0.9)
+    pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
+    pygame.mixer.music.set_volume(0.4)
+    pygame.mixer.music.play(-1)
+
 
     print("All sounds loaded successfully!")
 except pygame.error as e:
@@ -56,7 +60,9 @@ try:
     sound_level_up.set_volume(1.0)
     sound_pause = pygame.mixer.Sound(os.path.join(SOUND_PATH, "bell-98033.wav"))
     sound_pause.set_volume(0.9)
-
+    pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
+    pygame.mixer.music.set_volume(0.7) 
+    pygame.mixer.music.play(-1)
     
     print("All sounds loaded successfully!")
 
@@ -106,6 +112,8 @@ class Bullet:
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
     selected_index = 0  # start with santa
+
+    pygame.mixer.music.set_volume(0.2)
 
     sound_intro.play()
 
@@ -262,7 +270,11 @@ while running:
                 if event.key == pygame.K_p:
                     paused = not paused
                     sound_pause.play()
-                if event.key ==pygame.K_SPACE and not paused:
+                    if paused:
+                     pygame.mixer.music.set_volume(0.1)
+                    else:
+                     pygame.mixer.music.set_volume(0.25)
+            if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
                         ammo -= 1
@@ -296,7 +308,7 @@ while running:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
-        level_speed_multiplier = 1 + (level - 1) * 0.5
+        level_speed_multiplier = 1 + (level - 1) * 0.15
 
         reindeer_speed_multiplier = 1
 
@@ -313,7 +325,7 @@ while running:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
-        gift_speed_multiplier = 1 + (level - 1) * 0.3
+        gift_speed_multiplier = 1 + (level - 1) * 0.15
         for gift in gifts:
             gift.update(gift_speed_multiplier)
 
@@ -331,6 +343,7 @@ while running:
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
                 sound_game_over.play()
+                pygame.mixer.music.fadeout(500)
                 pygame.time.delay(100)
                 game_active = False
                 break
@@ -400,12 +413,6 @@ while running:
             reindeer_event.update() 
             reindeer_event.draw(screen)
 
-        dark_overlay = pygame.Surface((WIDTH, HEIGHT))
-        dark_overlay.set_alpha(200) 
-        dark_overlay.fill((0, 0, 0)) 
-
-        if  500 <= score.value <= 600 and score.value:
-            screen.blit(dark_overlay, (0, 0))
 
         pygame.display.update()
 

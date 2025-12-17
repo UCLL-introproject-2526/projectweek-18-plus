@@ -6,6 +6,7 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+import os
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))

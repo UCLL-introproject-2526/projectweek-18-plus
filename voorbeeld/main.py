@@ -203,6 +203,10 @@ while running:
     speed_multiplier = 1
     paused = False
     reindeer_spawned = False
+    level = 0
+    level_threshold = 50
+    LEVEL_UP_DURATION = 60
+    show_level_up = False
 
     # 3. Main game loop
     game_active = True
@@ -235,24 +239,20 @@ while running:
             pygame.display.update()
             continue  # skip updates while paused
 
+        # LEVELS
+        new_level = score.value // level_threshold + 1
+        if new_level != level:
+            level = new_level
+            show_level_up = True
+            level_up_timer = LEVEL_UP_DURATION
+
+        spawn_rate = max(10, span_rate_base - (level - 1) * 5)  # spawn rate sneller per level
+
         # INPUT
         keys = pygame.key.get_pressed()
         player.move(keys)
 
-        # UPDATE OBJECTS (fixed ordering)
-        if score.value > 250:
-            spawn_rate = 10
-        elif score.value > 200:
-            spawn_rate = 20
-        elif score.value > 150:
-            spawn_rate = 30
-        elif score.value > 100:
-            spawn_rate = 40
-        elif score.value > 50:
-            spawn_rate = 50
-        else:
-            spawn_rate = span_rate_base
-
+        # UPDATE OBJECTS 
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
@@ -328,6 +328,18 @@ while running:
         font = pygame.font.SysFont(None, 36)
         ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
         screen.blit(ammo_text, (10, 40))
+
+        if show_level_up:
+            # level_up_text = FONT_TITLE.render(f"LEVEL {level}!", True, (255, 255, 0))
+            x = WIDTH // 2
+            y = HEIGHT // 2
+            # screen.blit(level_up_text, (WIDTH // 2 - level_up_text.get_width() // 2, HEIGHT // 2))
+            draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
+
+            level_up_timer -= 1
+            if level_up_timer <= 0:
+                show_level_up = False
+
 
         for obs in obstacles:
             obs.draw(screen)

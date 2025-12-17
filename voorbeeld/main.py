@@ -40,6 +40,7 @@ try:
     sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
     sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "christmas-chimes-whoosh-264365.wav"))
+    sound_shoot = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
     print("All sounds loaded successfully!")
 except pygame.error as e:
     print("Error loading sounds:", e)
@@ -213,7 +214,8 @@ while running:
                 running = False
                 game_active = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                if ammo > 0: 
+                if ammo > 0:
+                    sound_shoot.play()
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
                     ammo -= 1
             if event.type == pygame.KEYDOWN:
@@ -222,6 +224,7 @@ while running:
                 
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
+                         sound_shoot.play()
                          bullets.append(Bullet(player.rect.centerx, player.rect.top))
                          ammo -= 1
                         

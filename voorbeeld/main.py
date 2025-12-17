@@ -21,6 +21,7 @@ screen.fill((30, 30, 60))
 loading_font = pygame.font.SysFont(None, 40)
 loading_text = loading_font.render("Loading...", True, (255, 255, 255))
 screen.blit(loading_text, loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
+
 pygame.display.update()
 
 
@@ -32,6 +33,22 @@ REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_widt
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
 FONT_SMALL = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 24)
+
+# === SOUND PATH ===
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SOUND_PATH = os.path.join(BASE_DIR, "sounds")
+
+try:
+    # sound_intro = pygame.mixer.Sound(os.path.join("voorbeeld/sound/ho-ho-ho-merry-christmas-439603.wav"))
+    # sound_game_over = pygame.mixer.Sound(os.path.join("voorbeeld/sound/game-over-417465.wav"))
+    # sound_catch = pygame.mixer.Sound(os.path.join("voorbeeld/sound/christmas-chimes-whoosh-264365.wav"))
+    hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    
+    print("All sounds loaded successfully!")
+
+except pygame.error as e:
+    print("Error loading sounds:", e)
+
 
 # == highscore ==
 highscore = 0
@@ -75,6 +92,8 @@ class Bullet:
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
     selected_index = 0  # start with santa
+
+    # sound_intro.play()
 
     while True:
         if start_background:
@@ -128,6 +147,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    # sound_intro.stop()
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
@@ -267,10 +287,14 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
+                # sound_game_over.play()
+                pygame.time.delay(100)
                 game_active = False
+                break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
+                # sound_catch.play()
                 score.add(10)
                 ammo += 3
                 gifts.remove(gift)

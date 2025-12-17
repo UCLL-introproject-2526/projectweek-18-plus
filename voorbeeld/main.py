@@ -187,6 +187,25 @@ while running:
     # 1. Start screen
     chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
 
+    #uitleg scherm
+    how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
+    how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
+
+    waiting_for_space = True
+
+    while waiting_for_space:
+        screen.blit(how_to_play,(0,0))
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                waiting_for_space = False
+
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    waiting_for_space = False
+
     #2. Initialize game    
     player = Player(chosen_image)
     obstacles = []

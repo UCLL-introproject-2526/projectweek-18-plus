@@ -6,47 +6,11 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
-import os
 
 pygame.init()
-pygame.mixer.init()
-
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
-
-
-# == Loading screen == 
-screen.fill((30, 30, 60))
-
-loading_font = pygame.font.SysFont(None, 40)
-loading_text = loading_font.render("Loading...", True, (255, 255, 255))
-screen.blit(
-    loading_text,
-    loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
-)
-pygame.display.update()
-
-
-# == Rendeir event ==
-REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
-REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE,(REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
-
-# === SOUND PATH ===
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SOUND_PATH = os.path.join(BASE_DIR, "sounds")
-
-# === LOAD SOUNDS ===
-try:
-    sound_intro = pygame.mixer.Sound(os.path.join("voorbeeld/sound/ho-ho-ho-merry-christmas-439603.wav"))
-    sound_game_over = pygame.mixer.Sound(os.path.join("voorbeeld/sound/game-over-417465.wav"))
-    sound_catch = pygame.mixer.Sound(os.path.join("voorbeeld/sound/christmas-chimes-whoosh-264365.wav"))
-
-hit_sound = pygame.mixer.Sound("voorbeeld/sound/snowball-throw-hit_4-278172.wav")
-
-    print("All sounds loaded successfully!")
-except pygame.error as e:
-    print("Error loading sounds:", e)
 
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
@@ -71,13 +35,14 @@ def crop_surface(surface):
     return surface.subsurface(rect).copy()
 
 skins = [
-    crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()),
+    crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png",).convert_alpha()),
     crop_surface(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha()),
-    crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
+    crop_surface(pygame.image.load("voorbeeld/assets/Elf.png").convert_alpha())
 ]
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #links/rechts preview
+
 
 # == Bullet class ==
 class Bullet:
@@ -95,8 +60,6 @@ class Bullet:
 def show_front_screen(screen, start_background, highscore, last_score=None):
 
     selected_index = 0  # start with santa
-
-    sound_intro.play()
 
     while True:
         if start_background:
@@ -151,7 +114,6 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    sound_intro.stop()   # <-- stop intro sound
                     return skins[selected_index]  # return the chosen image
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
@@ -163,7 +125,6 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
 def draw_text_outline(font, text, color, outline, x, y):
         text_surf = font.render(text, True, color)
         outline_surf = font.render(text, True, outline)
-  
         text_rect = text_surf.get_rect(center=(x, y))
 
         for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:
@@ -218,8 +179,7 @@ while running:
                 running = False
                 game_active = False
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                if ammo > 0:
-                    sound_shoot.play()
+                if ammo > 0: 
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
                     ammo -= 1
             if event.type == pygame.KEYDOWN:
@@ -228,7 +188,6 @@ while running:
                 
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
-                         sound_shoot.play()
                          bullets.append(Bullet(player.rect.centerx, player.rect.top))
                          ammo -= 1
                         
@@ -293,14 +252,10 @@ while running:
         # COLLISIONS
         for obs in obstacles[:]:
             if player.hitbox.colliderect(obs.rect):
-                sound_game_over.play()
-                pygame.time.delay(100)  # voorkomt spam
                 game_active = False
-                break
 
         for gift in gifts[:]:
             if player.hitbox.colliderect(gift.rect):
-                sound_catch.play()
                 score.add(10)
                 gifts.remove(gift)
                 ammo += 3
@@ -314,7 +269,7 @@ while running:
                     break
         
         if score.value >= 200 and score.value <= 215 and reindeer_event is None:
-            reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+            reindeer_event = ReindeerEvent()
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

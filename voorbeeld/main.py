@@ -142,6 +142,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
 def draw_text_outline(font, text, color, outline, x, y):
         text_surf = font.render(text, True, color)
         outline_surf = font.render(text, True, outline)
+  
         text_rect = text_surf.get_rect(center=(x, y))
 
         for dx, dy in [(-2,0),(2,0),(0,-2),(0,2)]:

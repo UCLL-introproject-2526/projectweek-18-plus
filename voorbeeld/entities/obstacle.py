@@ -7,15 +7,15 @@ class Obstacle:
         self.size = 30
         self.x = random.randint(0, WIDTH - self.size)
         self.y = -self.size
-        self.speed = random.randint(3, 6)
+        self.speed = random.randint(4, 6)
 
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
         self.image = pygame.image.load("voorbeeld/assets/sneeuwbal.png").convert_alpha()
         self.image = pygame.transform.scale(self.image, (55, self.size))
 
-    def update(self):
-        self.rect.y += self.speed
+    def update(self, multiplier=1):
+        self.rect.y += self.speed * multiplier
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)

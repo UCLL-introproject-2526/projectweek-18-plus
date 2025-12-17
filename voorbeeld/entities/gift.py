@@ -21,7 +21,7 @@ class Gift:
         self.image = pygame.image.load(image_path).convert_alpha()
         self.image = pygame.transform.scale(self.image, (self.size, self.size))
 
-    def update(self):
+    def update(self,):
         self.rect.y += self.speed
 
     def draw(self, screen):

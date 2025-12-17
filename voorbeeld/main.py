@@ -12,6 +12,22 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+# == Loading screen == 
+screen.fill((30, 30, 60))
+
+loading_font = pygame.font.SysFont(None, 40)
+loading_text = loading_font.render("Loading...", True, (255, 255, 255))
+screen.blit(
+    loading_text,
+    loading_text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
+)
+pygame.display.update()
+
+
+# == Rendeir event ==
+REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
+REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE,(REINDEER_IMAGE.get_width() // 10, REINDEER_IMAGE.get_height() // 10))
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -261,8 +277,8 @@ while running:
                     score.add(5)
                     break
         
-        if score.value >= 200 and score.value <= 215 and reindeer_event is None:
-            reindeer_event = ReindeerEvent()
+        if score.value >= 50 and score.value <= 215 and reindeer_event is None:
+            reindeer_event = ReindeerEvent(REINDEER_IMAGE)
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

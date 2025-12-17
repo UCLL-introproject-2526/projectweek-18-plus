@@ -75,6 +75,9 @@ skins = [
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #links/rechts preview
 
+# == info scherm ==
+
+
 # == Bullet class ==
 class Bullet:
     def __init__(self, x, y):

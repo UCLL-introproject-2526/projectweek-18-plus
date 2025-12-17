@@ -42,7 +42,7 @@ try:
     sound_intro = pygame.mixer.Sound(os.path.join(SOUND_PATH, "ho-ho-ho-merry-christmas-439603.wav"))
     sound_game_over = pygame.mixer.Sound(os.path.join(SOUND_PATH, "game-over-417465.wav"))
     sound_catch = pygame.mixer.Sound(os.path.join(SOUND_PATH, "festive-chime-439612.wav"))
-    # hit_sound = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
+    sound_throw = pygame.mixer.Sound(os.path.join(SOUND_PATH, "snowball-throw-hit_4-278172.wav"))
     
     print("All sounds loaded successfully!")
 
@@ -203,6 +203,7 @@ while running:
     speed_multiplier = 1
     paused = False
     reindeer_spawned = False
+    next_reindeer_score = 200
     level = 0
     level_threshold = 50
     LEVEL_UP_DURATION = 60
@@ -223,6 +224,7 @@ while running:
                 if ammo > 0: 
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
                     ammo -= 1
+                    sound_throw.play()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
@@ -230,6 +232,7 @@ while running:
                     if ammo > 0:
                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
                         ammo -= 1
+                        sound_throw.play()
 
         # PAUSED
         if paused:
@@ -246,7 +249,7 @@ while running:
             show_level_up = True
             level_up_timer = LEVEL_UP_DURATION
 
-        spawn_rate = max(10, span_rate_base - (level - 1) * 5)  # spawn rate sneller per level
+        spawn_rate = max(10, span_rate_base - (level - 1) * 5)
 
         # INPUT
         keys = pygame.key.get_pressed()
@@ -258,21 +261,26 @@ while running:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
+        level_speed_multiplier = 1 + (level - 1) * 0.15
+
+        reindeer_speed_multiplier = 1
+
         if reindeer_event is not None and reindeer_event.active:
-            speed_multiplier = 2
-        else:
-            speed_multiplier = 1
+            reindeer_speed_multiplier = 2
+
+        total_speed_multiplier = level_speed_multiplier * reindeer_speed_multiplier
 
         for obs in obstacles:
-            obs.update(speed_multiplier)
+            obs.update(total_speed_multiplier)
 
         gift_spawn_timer += 1
         if gift_spawn_timer >= 200:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
+        gift_speed_multiplier = 1 + (level - 1) * 0.15
         for gift in gifts:
-            gift.update()
+            gift.update(gift_speed_multiplier)
 
         score_timer += 1
         if score_timer >= FPS:
@@ -307,8 +315,13 @@ while running:
                     score.add(5)
                     break
 
-        if score.value >= 200 and score.value <= 215 and reindeer_event is None:
+        # if score.value != 0 and score.value % 50 == 0 and score.value != last_reindeer_score and reindeer_event is None:
+        #     reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+        #     last_reindeer_score = score.value
+
+        if score.value >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+            next_reindeer_score += 200
 
         if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

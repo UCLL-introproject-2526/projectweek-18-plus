@@ -7,7 +7,7 @@ class Gift:
         self.size = 40
         self.x = random.randint(0, WIDTH - self.size)
         self.y = -self.size
-        self.speed = random.randint(3, 5)
+        self.speed = random.randint(2, 4)
         self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
 
         gift_images = [

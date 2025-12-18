@@ -6,7 +6,6 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
-from saveload import SaveManager, ScoreHistory
 import os
 
 pygame.init()
@@ -62,11 +61,10 @@ except pygame.error as e:
 
 
 # == highscore ==
-save_manager = SaveManager()
-score_history = ScoreHistory()
+    if last_score > highscore:
+        highscore = last_score
+        save_manager.set_highscore(highscore)
 
-highscore = save_manager.get_highscore()
-selected_skin_index = save_manager.get_skin()
 
 # == Load background for start screen ==
 try:
@@ -88,16 +86,17 @@ skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
 
-
+selected_skin_index =0
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
 
 # == Bullet class ==
 class Bullet:
-    def __init__(self, x, y):
+    def __init__(self, x, y, owner):
         self.rect = pygame.Rect(x-5, y, 16, 22)
         self.speed = -8
+        self.owner = owner
 
     def update(self):
         self.rect.y += self.speed
@@ -106,7 +105,7 @@ class Bullet:
         pygame.draw.rect(screen, (255, 255, 255), (self.rect.x + 5, self.rect.y, 6, 12))
 
 # == Start Screen ==
-def show_front_screen(screen, start_background, highscore, last_score=None):
+def show_front_screen(screen, start_background, highscore, last_score=None, new_highscore=False):
     game_mode = None
     global selected_skin_index
     selected_index = selected_skin_index
@@ -123,6 +122,10 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
 
         hs_text = FONT_TEXT.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH // 2 - hs_text.get_width() // 2, HEIGHT // 4 + 90))
+
+        if new_highscore:
+            new_text = FONT_SMALL.render("New Highscore!", True,(22,101,190))
+            screen.blit(new_text, (WIDTH // 2 - new_text.get_width() // 2, HEIGHT // 4 + 60))
 
         instruction = FONT_SMALL.render("Press SPACE to start", True, (0, 0, 0))
         screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 4 + 200))
@@ -163,14 +166,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
         single_text = FONT_SMALL.render("SINGLEPLAYER", True, (255, 255, 255))
         multi_text  = FONT_SMALL.render("MULTIPLAYER", True, (255, 255, 255))
 
-        screen.blit(
-            single_text,
-            single_text.get_rect(center=single_btn.center)
-        )
-        screen.blit(
-            multi_text,
-            multi_text.get_rect(center=multi_btn.center)
-        )
+        screen.blit(single_text,single_text.get_rect(center=single_btn.center))
+        screen.blit(multi_text,multi_text.get_rect(center=multi_btn.center))
 
         # Skin select label
         skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
@@ -202,7 +199,6 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
-                    save_manager.set_skin(selected_skin_index)
                     return skins[selected_index], "single"
 
                 if multi_btn.collidepoint(event.pos):
@@ -239,51 +235,69 @@ def draw_text_outline(font, text, color, outline, x, y):
     screen.blit(text_surf, text_rect)
 
 
-def show_game_over(screen, score_value):
+def show_game_over(screen, score_value = None , winner = None, loser = None):
     draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH // 2, HEIGHT // 2)
-    score_text = FONT_TEXT.render(f"Score: {score_value}", True, (0, 0, 0))
-    score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
-    screen.blit(score_text, score_rect)
+    
+    if game_mode == "single":
+        score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+        screen.blit(score_text, score_rect)
+    else: 
+        # Score winner
+        score_text = FONT_TEXT.render(f"Score winner: {winner}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+        screen.blit(score_text, score_rect)
+
+        # Score loser
+        score_text2 = FONT_TEXT.render(f"Score loser: {loser}", True, (255, 255, 255))
+        score_rect2 = score_text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
+        screen.blit(score_text2, score_rect2)
+
     pygame.display.update()
     pygame.time.wait(2000)
 
 # == SHOOTING ==
 def shoot(player):
-    global ammo
-    if ammo > 0:
-        bullets.append(Bullet(player.rect.centerx, player.rect.top))
-        ammo -= 1
+    if player_ammo[player] > 0:
+        bullets.append(Bullet(player.rect.centerx, player.rect.top, player))
+        player_ammo[player] -= 1
         sound_throw.play()
 
 # == Main Game Loop ==
+highscore = 0
 last_score = None
 running = True
+new_highscore = False
 reindeer_event = None
 
 
 while running:
 
     # 1. Start screen
-    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score)
+    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
 
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
     how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
 
-    waiting_for_space = True
+    waiting_for_start = True
 
-    while waiting_for_space:
+    while waiting_for_start:
         screen.blit(how_to_play,(0,0))
         pygame.display.update()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                waiting_for_space = False
+                waiting_for_start = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    waiting_for_space = False
+                    waiting_for_start = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1: 
+                 waiting_for_start = False
 
     #  pygame.event.clear()
 
@@ -295,20 +309,25 @@ while running:
         players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
 
     elif game_mode == "multi":
-        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
         players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
 
 
     obstacles = []
     gifts = []
     bullets = [] 
     background = Background()
-    score = Score()
+    scores = {}
+    for player in players:
+        scores[player] = Score()
+    
+    # ammo = 10
+    player_ammo = {player: 10 for player in players}
+
 
     gift_spawn_timer = 0
     spawn_rate = 80
     span_rate_base = 80
-    ammo = 10
     spawn_timer = 0
     score_timer = 0
     speed_multiplier = 1
@@ -388,9 +407,16 @@ while running:
             player.rect.left = WIDTH
             obstacles.clear()
 
+        # SCORES UPDATEN
+        score_timer += 1
+        if score_timer >= FPS:
+            for player in players:
+                scores[player].add(1)
+            score_timer = 0
+        total_score = sum(scores[player].value for player in players)
 
         # LEVELS
-        new_level = score.value // level_threshold + 1
+        new_level = total_score // level_threshold + 1
         if new_level != level:
             level = new_level
             sound_level_up.play()
@@ -415,7 +441,14 @@ while running:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
-        level_speed_multiplier = 1 + (level - 1) * 0.3
+        # for gift in gifts[:]:   -> zorgen dat er iets gebeurd (wenend kind) als je het pakje niet vangt
+        #     if gift.rect.top > HEIGHT and game_mode == "single":
+        #         font = pygame.font.SysFont(None, 64)
+        #         pause_text = font.render("crying baby", True, (255, 255, 0))
+        #         screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
+        #         gifts.remove(gift)
+
+        level_speed_multiplier = 1 + (level - 1) * 0.5
 
         reindeer_speed_multiplier = 1
 
@@ -429,14 +462,10 @@ while running:
         for obs in obstacles:
             obs.update(total_speed_multiplier)
 
-        gift_speed_multiplier = 1 + (level - 1) * 0.3
+        gift_speed_multiplier = 1 + (level - 1) * 0.5
         for gift in gifts:
             gift.update(gift_speed_multiplier)
 
-        score_timer += 1
-        if score_timer >= FPS:
-            score.add(1)
-            score_timer = 0
 
         for bullet in bullets[:]:
             bullet.update()
@@ -455,8 +484,8 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(gift.rect):
                     sound_catch.play()
-                    score.add(10)
-                    ammo += 3
+                    scores[player].add(10)
+                    player_ammo[player] += 3
                     gifts.remove(gift)
                     break
 
@@ -465,11 +494,11 @@ while running:
                 if bullet.rect.colliderect(obs.rect):
                     obstacles.remove(obs)
                     bullets.remove(bullet)
-                    score.add(5)
+                    scores[bullet.owner].add(3)
                     break
         
         # REINDEER-EVENT
-        if score.value >= next_reindeer_score:
+        if total_score >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
             next_reindeer_score += 200
 
@@ -487,17 +516,32 @@ while running:
         background.render(screen)
         for player in players:
             player.draw(screen, keys)
-        score.draw(screen)
-
+        
         font = pygame.font.SysFont(None, 36)
-        ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
-        screen.blit(ammo_text, (10, 40))
+        
+        if game_mode == "single":
+            score = scores[players[0]].value
+            text = font.render(f"Score: {score}",True,(255, 255, 255))
+            screen.blit(text, (10, 10))
 
-        if show_level_up:
-            # level_up_text = FONT_TITLE.render(f"LEVEL {level}!", True, (255, 255, 0))
+            ammo_text = font.render(f"Ammo: {player_ammo[players[0]]}", True, (255, 255, 255))
+            screen.blit(ammo_text, (10, 40))
+
+        else:
+            x = 10
+            for i, player in enumerate(players):
+                text = font.render(f"Player {i+1} score: {scores[player].value}",True,(255, 255, 255))
+                screen.blit(text, (x, 10))
+                
+                ammo_text = font.render(f"Ammo: {player_ammo[player]}", True, (255, 255, 255))
+                screen.blit(ammo_text, (x, 40))
+
+                x += WIDTH - 240
+
+
+        if show_level_up and game_mode == "single":
             x = WIDTH // 2
             y = HEIGHT // 2
-            # screen.blit(level_up_text, (WIDTH // 2 - level_up_text.get_width() // 2, HEIGHT // 2))
             draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
 
             level_up_timer -= 1
@@ -520,26 +564,58 @@ while running:
         dark_overlay.set_alpha(200) 
         dark_overlay.fill((0, 0, 0)) 
 
-        if  500 <= score.value <= 600 and score.value:
+        if  500 <= total_score <= 600: 
             screen.blit(dark_overlay, (0, 0))
         
         if use_timer:
             seconds_left = timer_counter // FPS
-            timer_text = font.render(f"Time: {seconds_left}", True, (255, 255, 255))
-            screen.blit(timer_text, (WIDTH - 150, 10))
+            font = pygame.font.SysFont(None, 45)
+            timer_text = font.render(f"Time: {seconds_left}", True, (33, 42, 73))
+            text_rect = timer_text.get_rect(center=(WIDTH // 2, 10 + timer_text.get_height() // 2))
+            screen.blit(timer_text, text_rect)
 
         pygame.display.update()
 
     # 4. Game Over 
-last_score = score.value
 
-score_history.add_score(score.value)
+    score_for_highscore = None
+    score_winner = None
+    score_loser = None
 
-if score.value > highscore:
-    highscore = score.value
-    save_manager.set_highscore(highscore)
+    new_highscore = False
 
-show_game_over(screen, score.value)
+    if last_score > highscore:
+        highscore = last_score
+        save_manager.set_highscore(highscore)  
+        new_highscore = True
+
+    else:  # multiplayer
+        score_winner= max(scores[player].value for player in players)
+        score_loser = min(scores[player].value for player in players)
+        
+    
+    winner_text = None
+    if game_mode == "multi":
+        p1, p2 = players
+        s1 = scores[p1].value
+        s2 = scores[p2].value
+
+        if s1 > s2:
+            winner_text = "Player 1 wins!"
+        elif s2 > s1:
+            winner_text = "Player 2 wins!"
+        else:
+            winner_text = "It's a draw!"
+
+    show_game_over(screen, last_score, score_winner, score_loser)
+
+    if winner_text:
+        font = pygame.font.Font(None, 48)
+        text_surf = FONT_TEXT.render(winner_text, True, (221, 220, 114))
+        text_rect = text_surf.get_rect(center=(WIDTH//2, HEIGHT//2 + 140))
+        screen.blit(text_surf, text_rect)
+        pygame.display.update()
+        pygame.time.wait(1000)
 
 
 pygame.quit()

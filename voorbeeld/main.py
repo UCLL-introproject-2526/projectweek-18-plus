@@ -273,14 +273,22 @@ while running:
     chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
 
     #uitleg scherm
-    how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
-    how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
+    how_to_play_single = pygame.image.load("voorbeeld/assets/how_to_play_single.png").convert()
+    how_to_play_single = pygame.transform.scale(how_to_play_single,(WIDTH,HEIGHT))
+
+    how_to_play_multi = pygame.image.load("voorbeeld/assets/how_to_play_multi.png").convert()
+    how_to_play_multi = pygame.transform.scale(how_to_play_multi,(WIDTH,HEIGHT))
 
     waiting_for_start = True
 
     while waiting_for_start:
-        screen.blit(how_to_play,(0,0))
-        pygame.display.update()
+        if game_mode =="single":
+            screen.blit(how_to_play_single,(0,0))
+            pygame.display.update()
+        
+        if game_mode == "multi":
+            screen.blit(how_to_play_multi,(0,0))
+            pygame.display.update()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

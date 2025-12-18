@@ -293,21 +293,17 @@ while running:
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-                waiting_for_start = False
-                break
+              running = False
+              waiting_for_start = False
+              break
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     waiting_for_start = False
-                    break
             
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1: 
                    waiting_for_start = False
-                   break
-
-    pygame.event.clear()
 
     #2. Initialize game    
     
@@ -509,8 +505,8 @@ while running:
       
         # REINDEER-EVENT
     if total_score >= next_reindeer_score:
-            reindeer_event = ReindeerEvent(REINDEER_IMAGE)
-            next_reindeer_score += 200
+        reindeer_event = ReindeerEvent(REINDEER_IMAGE)
+        next_reindeer_score += 200
 
     if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5

@@ -295,13 +295,14 @@ while running:
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
     how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
-
+    
+    pygame.event.clear()
     waiting_for_space = True
 
     while waiting_for_space:
         screen.blit(how_to_play,(0,0))
         pygame.display.update()
-
+        clock.tick(FPS)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -321,8 +322,8 @@ while running:
         players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
 
     elif game_mode == "multi":
-        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
         players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
 
 
     obstacles = []
@@ -333,8 +334,6 @@ while running:
     for player in players:
         scores[player] = Score()
     
-    total_score = sum(scores[player].value for player in players)
-
     gift_spawn_timer = 0
     spawn_rate = 80
     span_rate_base = 80
@@ -422,6 +421,13 @@ while running:
             player.rect.left = WIDTH
             obstacles.clear()
 
+        # SCORES UPDATEN
+        score_timer += 1
+        if score_timer >= FPS:
+            for player in players:
+                scores[player].add(1)
+            score_timer = 0
+        total_score = sum(scores[player].value for player in players)
 
         # LEVELS
         new_level = total_score // level_threshold + 1
@@ -449,7 +455,7 @@ while running:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
-        level_speed_multiplier = 1 + (level - 1) * 0.3
+        level_speed_multiplier = 1 + (level - 1) * 0.5
 
         reindeer_speed_multiplier = 1
 
@@ -461,20 +467,10 @@ while running:
         for obs in obstacles:
             obs.update(total_speed_multiplier)
 
-        gift_spawn_timer += 1
-        if gift_spawn_timer >= 200:
-            gifts.append(Gift())
-            gift_spawn_timer = 0
-
-        gift_speed_multiplier = 1 + (level - 1) * 0.15
+        gift_speed_multiplier = 1 + (level - 1) * 0.5
         for gift in gifts:
             gift.update(gift_speed_multiplier)
 
-        score_timer += 1
-        if score_timer >= FPS:
-            for player in players:
-                scores[player].add(1)
-            score_timer = 0
 
         for bullet in bullets[:]:
             bullet.update()
@@ -550,7 +546,7 @@ while running:
     ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
     screen.blit(ammo_text, (10, 10))
 
-    if show_level_up:
+    if show_level_up and game_mode == "single":
             x = WIDTH // 2
             y = HEIGHT // 2
             draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)

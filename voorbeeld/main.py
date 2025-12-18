@@ -90,14 +90,14 @@ SMALL_SIZE = (50, 60)       #linksrechts preview
 # == Bullet class ==
 class Bullet:
     def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 6, 12)
+        self.rect = pygame.Rect(x-5, y, 16, 22)
         self.speed = -8
 
     def update(self):
         self.rect.y += self.speed
 
     def draw(self, screen):
-        pygame.draw.rect(screen, (255, 255, 255), self.rect)
+        pygame.draw.rect(screen, (255, 255, 255), (self.rect.x + 5, self.rect.y, 6, 12))
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
@@ -287,10 +287,6 @@ while running:
             background.next_level()  
             player.rect.right = 0    
             
-    
-            obstacles.clear()
-            gifts.clear()
-            bullets.clear()
 
         elif player.rect.right < 0:
             background.next_level()

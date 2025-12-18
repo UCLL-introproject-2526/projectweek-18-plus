@@ -19,11 +19,8 @@ class Player:
         self.rect = self.image.get_rect(midbottom=(WIDTH//2, HEIGHT - 10))
         self.hitbox = self.rect.inflate(-20, -15)
 
-        self.hit_flash_timer = 0
-        self.flash_duration = 10
-        self.flash_interval = 2
-
     def move(self, keys):
+        
         if self.controls == "arrows":
             if keys[pygame.K_LEFT]:
                 self.rect.x -= self.speed
@@ -42,10 +39,6 @@ class Player:
 
         self.hitbox.center = self.rect.center
 
-    def hit(self):
-        self.hit_flash_timer = self.flash_duration
-
-
     
     def draw(self, screen, keys):
         flipped = False
@@ -53,26 +46,6 @@ class Player:
             flipped = True
         if self.controls == "qd" and keys[pygame.K_q]:
             flipped = True
-
-        # Knipper-effect bij botsing
-        if self.hit_flash_timer > 0:
-            if self.hit_flash_timer % (2 * self.flash_interval) < self.flash_interval:
-                # Rood tint
-                temp_image = self.image.copy()
-                temp_image.fill((255, 0, 0, 150), special_flags=pygame.BLEND_RGBA_ADD)
-                if flipped:
-                    screen.blit(pygame.transform.flip(temp_image, True, False), self.rect)
-                else:
-                    screen.blit(temp_image, self.rect)
-            else:
-               # Normale afbeelding
-                if flipped:
-                    screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
-                else:
-                    screen.blit(self.image, self.rect)
-            self.hit_flash_timer -= 1
-        else:
-            # Normale draw
             if flipped:
                 screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
             else:

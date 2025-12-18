@@ -352,6 +352,8 @@ while running:
     show_level_up = False
     current_screen = 1
 
+    dead_player = None
+
     # TIMER (alleen voor multiplayer)
     use_timer = (game_mode == "multi")
     game_time = 60  # seconden
@@ -501,7 +503,8 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
-                    explosions.append({"pos": obs.rect.center,"timer": 15})
+                    explosions.append({"pos": obs.rect.center,"timer": 10})
+                    dead_player = player
                     game_active = False
                     break
 
@@ -630,6 +633,8 @@ while running:
 
     new_highscore = False
 
+    winner_text = None
+
     if game_mode == "single":
         last_score = scores[players[0]].value
         score_history.add_score(last_score)
@@ -640,24 +645,38 @@ while running:
             save_manager.set_highscore(highscore)
 
     else:  # multiplayer
-        score_winner= max(scores[player].value for player in players)
-        score_loser = min(scores[player].value for player in players)
-        
-    
-    winner_text = None
-    if game_mode == "multi":
-        p1, p2 = players
-        s1 = scores[p1].value
-        s2 = scores[p2].value
+        if dead_player is not None:
+            loser = dead_player
+            winner = players[0] if players[1] == loser else players[1]
 
-        if s1 > s2:
-            winner_text = "Player 1 wins!"
-        elif s2 > s1:
-            winner_text = "Player 2 wins!"
+            score_winner = scores[winner].value
+            score_loser = scores[loser].value
+
+            if winner == players[0]:
+                winner_text = "Player 1 wins!"
+            else:
+                winner_text = "Player 2 wins!"
+
         else:
-            winner_text = "It's a draw!"
+            p1, p2 = players
+            s1 = scores[p1].value
+            s2 = scores[p2].value
 
-    show_game_over(screen, last_score, score_winner, score_loser)
+            if s1 > s2:
+                winner = p1
+                loser = p2
+                winner_text = "Player 1 wins!"
+            elif s2 > s1:
+                winner = p2
+                loser = p1
+                winner_text = "Player 2 wins!"
+            else:
+                winner = None
+                loser = None
+                winner_text = "It's a draw!"
+
+            score_winner = max(s1, s2)
+            score_loser = min(s1, s2)
 
     if winner_text:
         font = pygame.font.Font(None, 48)

@@ -341,7 +341,7 @@ while running:
             # SINGLEPLAYER: schieten met muis of spatie
             if game_mode == "single" and not paused:
                 if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
-                    shoot(player[0])
+                    shoot(player)
 
             # MULTIPLAYER: elke speler eigen toets
             if game_mode == "multi" and not paused and event.type == pygame.KEYDOWN:

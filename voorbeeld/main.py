@@ -98,6 +98,8 @@ skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
 
+selected_skin_index =0
+
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
 
@@ -115,11 +117,9 @@ class Bullet:
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-    selected_index = 0  # start with santa
     game_mode = None
-
-    pygame.mixer.music.set_volume(0.2)
-
+    global selected_skin_index
+    selected_index = selected_skin_index
     sound_intro.play()
 
     while True:
@@ -211,10 +211,12 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
+                    selected_skin_index = selected_index
                     return skins[selected_index], "single"
 
                 if multi_btn.collidepoint(event.pos):
                     sound_intro.stop()
+                    selected_skin_index = selected_index
                     return skins[selected_index], "multi"
 
             if event.type == pygame.QUIT:
@@ -443,6 +445,7 @@ while running:
         for obs in obstacles[:]:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
+                    player.hit()
                     sound_game_over.play()
                     game_active = False
                     break

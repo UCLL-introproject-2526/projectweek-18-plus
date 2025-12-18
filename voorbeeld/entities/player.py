@@ -19,6 +19,8 @@ class Player:
         self.rect = self.image.get_rect(midbottom=(WIDTH//2, HEIGHT - 10))
         self.hitbox = self.rect.inflate(-20, -15)
 
+        self.hit_flash_timer = 0
+
     def move(self, keys):
         if self.controls == "arrows":
             if keys[pygame.K_LEFT]:
@@ -38,7 +40,19 @@ class Player:
 
         self.hitbox.center = self.rect.center
 
+    def hit(self):
+        self.hit_flash_timer = 10
+
+
     def draw(self, screen, keys):
+
+        if self.hit_flash_timer > 0:
+            temp_image = self.image.copy()
+            temp_image.fill((255, 0, 0, 100), special_flags=pygame.BLEND_RGBA_ADD)
+            screen.blit(temp_image, self.rect)
+            self.hit_flash_timer -= 1
+            return
+        
         flipped = False
 
         if self.controls == "arrows" and keys[pygame.K_LEFT]:
@@ -64,6 +78,8 @@ class Player:
 #         self.image = pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()
 #         self.image = pygame.transform.scale(self.image, (70, 80))
 
+#         self.hit_flash_timer = 0
+
 #     def move(self, keys):
 #         if keys[pygame.K_LEFT]:
 #             self.rect.x -= self.speed
@@ -72,7 +88,18 @@ class Player:
 
 #         self.rect.x = max(0, min(WIDTH - self.width, self.rect.x))
 
+#       def hit(self):
+#       self.hit_flash_timer = 10
+   
+
 #     def draw(self, screen, keys):
+
+#     if self.hit_flash_timer > 0:
+#         temp_image = self.image.copy()
+#         temp_image.fill((255, 0, 0, 100), special_flags=pygame.BLEND_RGBA_ADD)
+#         screen.blit(temp_image, self.rect)
+#         self.hit_flash_timer -= 1
+#          return
 #         if keys[pygame.K_LEFT]:
 #             screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
 #         elif keys[pygame.K_RIGHT]:

@@ -105,13 +105,8 @@ SMALL_SIZE = (50, 60)       #linksrechts preview
 
 # == Bullet class ==
 class Bullet:
-<<<<<<< HEAD
-    def __init__(self, x, y):
-        self.rect = pygame.Rect(x, y, 6, 12)
-=======
     def __init__(self, x, y, owner):
         self.rect = pygame.Rect(x-5, y, 16, 22)
->>>>>>> 622e214c67397fa775bc54cc35ac89ea6155a4d6
         self.speed = -8
         self.owner = owner
 
@@ -487,6 +482,7 @@ while running:
         for obs in obstacles[:]:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
+                 if player.hit_flash_timer == 0:  # alleen eerste keer
                     player.hit()
                     sound_game_over.play()
                     game_active = False
@@ -508,32 +504,32 @@ while running:
                     bullets.remove(bullet)
                     scores[bullet.owner].add(3)
                     break
-        
+      
         # REINDEER-EVENT
-        if total_score >= next_reindeer_score:
+    if total_score >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
             next_reindeer_score += 200
 
-        if reindeer_event is not None and reindeer_event.active:
+    if reindeer_event is not None and reindeer_event.active:
             spawn_rate = 5
 
-        else:
+    else:
             spawn_rate = span_rate_base
 
         
-        if reindeer_event is not None and not reindeer_event.active:
+    if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
 
         # DRAW
-        background.render(screen)
-        for player in players:
+    background.render(screen)
+    for player in players:
             player.draw(screen, keys)
         
-        font = pygame.font.SysFont(None, 36)
+    font = pygame.font.SysFont(None, 36)
         
-        if game_mode == "single":
+    if game_mode == "single":
             scores[players[0]].draw(screen)
-        else:
+    else:
             x = 10
             for i, player in enumerate(players):
                 text = font.render(
@@ -544,10 +540,10 @@ while running:
                 screen.blit(text, (x, 40))
                 x += WIDTH - 220
 
-        ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
-        screen.blit(ammo_text, (10, 10))
+    ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
+    screen.blit(ammo_text, (10, 10))
 
-        if show_level_up:
+    if show_level_up:
             x = WIDTH // 2
             y = HEIGHT // 2
             draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
@@ -557,30 +553,31 @@ while running:
                 show_level_up = False
 
 
-        for obs in obstacles:
+    for obs in obstacles:
             obs.draw(screen)
-        for gift in gifts:
+    for gift in gifts:
             gift.draw(screen)
-        for bullet in bullets:
+    for bullet in bullets:
             bullet.draw(screen)
 
-        if reindeer_event is not None and reindeer_event.active: 
+    if reindeer_event is not None and reindeer_event.active: 
             reindeer_event.update() 
             reindeer_event.draw(screen)
 
-        dark_overlay = pygame.Surface((WIDTH, HEIGHT))
-        dark_overlay.set_alpha(200) 
-        dark_overlay.fill((0, 0, 0)) 
+    dark_overlay = pygame.Surface((WIDTH, HEIGHT))
+    dark_overlay.set_alpha(200) 
+    dark_overlay.fill((0, 0, 0)) 
 
-        if  500 <= total_score <= 600: 
+    if  500 <= total_score <= 600: 
             screen.blit(dark_overlay, (0, 0))
         
-        if use_timer:
+    if use_timer:
             seconds_left = timer_counter // FPS
             timer_text = font.render(f"Time: {seconds_left}", True, (255, 255, 255))
             screen.blit(timer_text, (WIDTH - 150, 10))
 
-        pygame.display.update()
+    pygame.display.update()
+    
 
     # 4. Game Over 
 

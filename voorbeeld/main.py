@@ -8,6 +8,7 @@ from utils.reindeer import ReindeerEvent
 from background import Background
 from saveload import SaveManager, ScoreHistory
 import os
+import random
 
 pygame.init()
 pygame.mixer.init()
@@ -45,6 +46,11 @@ try:
 except pygame.error as e:
     print("Error loading sounds:", e)
 
+# == OBJECTS EXPLOSION ==
+EXPLOSION_IMAGE = pygame.image.load("voorbeeld/assets/ontploft.png").convert_alpha()
+EXPLOSION_IMAGE = pygame.transform.scale(EXPLOSION_IMAGE, (90, 90))
+explosions = []
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -74,6 +80,13 @@ try:
 except pygame.error as e:
     print("Error loading sounds:", e)
 
+# == SNOWFLAKES ==
+snowflakes = []
+for i in range(150):
+    x = random.randint(0, WIDTH)
+    y = random.randint(0, HEIGHT)
+    speed = random.uniform(1, 3)
+    snowflakes.append([x, y, speed])
 
 # == highscore ==
 save_manager = SaveManager()
@@ -281,29 +294,29 @@ while running:
     chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
 
     #uitleg scherm
-    how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
-    how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
+    how_to_play_single = pygame.image.load("voorbeeld/assets/how_to_play_single.png").convert()
+    how_to_play_single = pygame.transform.scale(how_to_play_single,(WIDTH,HEIGHT))
+
+    how_to_play_multi = pygame.image.load("voorbeeld/assets/how_to_play_multi.png").convert()
+    how_to_play_multi = pygame.transform.scale(how_to_play_multi,(WIDTH,HEIGHT))
 
     waiting_for_start = True
 
     while waiting_for_start:
-        screen.blit(how_to_play,(0,0))
-        pygame.display.update()
-        clock.tick(FPS)
+         if game_mode == "single":
+          screen.blit(how_to_play_single, (0,0))
+else:
+    screen.blit(how_to_play_multi, (0,0))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-              running = False
-              waiting_for_start = False
-              break
+pygame.display.update()
 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    waiting_for_start = False
-            
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1: 
-                   waiting_for_start = False
+waiting_for_start = True
+while waiting_for_start:
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            waiting_for_start = False
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            waiting_for_start = False
 
     #2. Initialize game    
     
@@ -342,6 +355,7 @@ while running:
     level_threshold = 50
     LEVEL_UP_DURATION = 60
     show_level_up = False
+    current_screen = 1
 
     # TIMER (alleen voor multiplayer)
     use_timer = (game_mode == "multi")
@@ -398,22 +412,29 @@ while running:
         
         # NEW BACKGROUNDS
         keys = pygame.key.get_pressed()
+
+        def transform_falling_objects(screen):
+            if (screen % 2) ==  1:
+                for obs in obstacles:
+                    obs.transform_to_snowball()
+            else:
+                for obs in obstacles:
+                    obs.transform_to_crying_child()
+
         for player in players:
             player.move(keys)
     
         if player.rect.left > WIDTH:
-            background.next_level()  
-            player.rect.right = 0    
-            
-    
-            obstacles.clear()
-            gifts.clear()
-            bullets.clear()
+            background.next_level() 
+            current_screen += 1 
+            player.rect.right = 0
+            transform_falling_objects(current_screen)    
 
         elif player.rect.right < 0:
             background.next_level()
+            current_screen +=1
             player.rect.left = WIDTH
-            obstacles.clear()
+            transform_falling_objects(current_screen)
 
         # SCORES UPDATEN
         score_timer += 1
@@ -441,7 +462,7 @@ while running:
         # UPDATE OBJECTS 
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
-            obstacles.append(Obstacle())
+            obstacles.append(Obstacle(background.current_index))
             spawn_timer = 0
 
         gift_spawn_timer += 1
@@ -483,6 +504,7 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
+                    explosions.append({"pos": obs.rect.center,"timer": 15})
                     game_active = False
                     break
 
@@ -501,6 +523,7 @@ while running:
                     obstacles.remove(obs)
                     bullets.remove(bullet)
                     scores[bullet.owner].add(3)
+                    explosions.append({"pos": obs.rect.center,"timer": 15})
                     break
       
         # REINDEER-EVENT
@@ -517,6 +540,14 @@ while running:
         
     if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
+        
+        # SNOW FALLING
+    if background.current_index == 0 and not paused:
+            for flake in snowflakes:
+                flake[1] += flake[2]
+                if flake[1] > HEIGHT:
+                    flake[1] = -5
+                    flake[0] = random.randint(0, WIDTH)
 
         # DRAW
     background.render(screen)
@@ -554,6 +585,10 @@ while running:
             if level_up_timer <= 0:
                 show_level_up = False
 
+    if background.current_index == 0:
+            for flake in snowflakes:
+                pygame.draw.rect(screen, (255, 255, 255), (flake[0], flake[1], 2, 2))
+
 
     for obs in obstacles:
             obs.draw(screen)
@@ -561,6 +596,14 @@ while running:
             gift.draw(screen)
     for bullet in bullets:
             bullet.draw(screen)
+        
+    for explosion in explosions[:]:
+            rect = EXPLOSION_IMAGE.get_rect(center=explosion["pos"])
+            screen.blit(EXPLOSION_IMAGE, rect)
+
+            explosion["timer"] -= 1
+            if explosion["timer"] <= 0:
+                explosions.remove(explosion)
 
     if reindeer_event is not None and reindeer_event.active: 
             reindeer_event.update() 

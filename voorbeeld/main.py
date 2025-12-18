@@ -1,11 +1,13 @@
 import pygame
 from settings import WIDTH, HEIGHT, FPS, BACKGROUND_COLOR
+import math 
 from entities.obstacle import Obstacle
 from entities.gift import Gift
 from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+from saveload import SaveManager, ScoreHistory
 import os
 
 pygame.init()
@@ -29,10 +31,61 @@ pygame.display.update()
 REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
 REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
 
+#== santa hat title == 
+SANTA_HAT = pygame.image.load("voorbeeld/assets/santa_hat.png").convert_alpha()
+SANTA_HAT = pygame.transform.scale(SANTA_HAT, (48, 36))
+
 # == Fonts ==
-FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
+FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 72)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
 FONT_SMALL = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 24)
+
+# >>> ADDED: Title animation helper
+title_time = 0
+
+def draw_title(surface, text, font, center_x, y):
+    global title_time
+    title_time += 0.05
+
+    bob = int(math.sin(title_time) * 4)
+
+    TITLE_COLOR = (220, 20, 60)   # Santa red
+    OUTLINE_COLOR = (20, 40, 80)  # Winter blue
+
+    text_surf = font.render(text, True, TITLE_COLOR)
+    rect = text_surf.get_rect(center=(center_x, y + bob))
+
+    # Shadow
+    shadow = font.render(text, True, (0, 0, 0))
+    surface.blit(shadow, (rect.x + 4, rect.y + 4))
+
+    # Outline
+    for ox, oy in [(-3,0),(3,0),(0,-3),(0,3),(-3,-3),(3,3),(-3,3),(3,-3)]:
+        outline = font.render(text, True, OUTLINE_COLOR)
+        surface.blit(outline, (rect.x + ox, rect.y + oy))
+
+    # Main text
+    surface.blit(text_surf, rect)
+
+#== santa hat O == 
+    target_char = "O"
+
+    if target_char in text:
+        index = text.index(target_char)
+
+        # Width of text before the "O"
+        prefix = text[:index]
+        prefix_width = font.size(prefix)[0]
+
+        # Position of the "O"
+        o_x = rect.x + prefix_width
+        o_y = rect.y
+
+        # Center hat on top of the letter
+        hat_x = o_x + font.size(target_char)[0] // 2 - SANTA_HAT.get_width() // 2
+        hat_y = o_y - SANTA_HAT.get_height() + 8
+
+        surface.blit(SANTA_HAT, (hat_x, hat_y))
 
 # === SOUND PATH ===
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -61,10 +114,11 @@ except pygame.error as e:
 
 
 # == highscore ==
-    if last_score > highscore:
-        highscore = last_score
-        save_manager.set_highscore(highscore)
+save_manager = SaveManager()
+score_history = ScoreHistory()
 
+highscore = save_manager.get_highscore()
+selected_skin_index = save_manager.get_skin()
 
 # == Load background for start screen ==
 try:
@@ -117,8 +171,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         else:
             screen.fill((0, 0, 50))
 
-        title = FONT_TITLE.render("Santa Dodger", True, (0, 0, 0))
-        screen.blit(title, (WIDTH // 2 - title.get_width() // 2, HEIGHT // 4))
+        
+        draw_title(screen,"SANTA DODGER",FONT_TITLE,WIDTH // 2,HEIGHT // 4)
 
         hs_text = FONT_TEXT.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH // 2 - hs_text.get_width() // 2, HEIGHT // 4 + 90))
@@ -140,19 +194,9 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         button_height = 50
         button_spacing = 50
 
-        single_btn = pygame.Rect(
-            WIDTH // 2 - button_width - button_spacing // 2,
-            HEIGHT // 4 + 450,
-            button_width,
-            button_height
-        )
+        single_btn = pygame.Rect(WIDTH // 2 - button_width - button_spacing // 2, HEIGHT // 4 + 450,button_width,button_height)
 
-        multi_btn = pygame.Rect(
-            WIDTH // 2 + button_spacing // 2,
-            HEIGHT // 4 + 450,
-            button_width,
-            button_height
-        )
+        multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 450,button_width,button_height)
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -235,26 +279,52 @@ def draw_text_outline(font, text, color, outline, x, y):
     screen.blit(text_surf, text_rect)
 
 
-def show_game_over(screen, score_value = None , winner = None, loser = None):
-    draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH // 2, HEIGHT // 2)
-    
-    if game_mode == "single":
-        score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
-        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
-        screen.blit(score_text, score_rect)
-    else: 
-        # Score winner
-        score_text = FONT_TEXT.render(f"Score winner: {winner}", True, (255, 255, 255))
-        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
-        screen.blit(score_text, score_rect)
+def show_game_over(screen, score_value=None, winner=None, loser=None):
+    duration_ms = 2000
+    start_time = pygame.time.get_ticks()
 
-        # Score loser
-        score_text2 = FONT_TEXT.render(f"Score loser: {loser}", True, (255, 255, 255))
-        score_rect2 = score_text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
-        screen.blit(score_text2, score_rect2)
+    while pygame.time.get_ticks() - start_time < duration_ms:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
-    pygame.display.update()
-    pygame.time.wait(2000)
+        t = (pygame.time.get_ticks() - start_time) / 1000.0
+
+        # Dark overlay
+        overlay = pygame.Surface((WIDTH, HEIGHT))
+        overlay.set_alpha(160)
+        overlay.fill((0, 0, 0))
+        screen.blit(overlay, (0, 0))
+
+        # 🔥 SHAKE EFFECT
+        shake_x = int(math.sin(t * 40) * 6)
+        shake_y = int(math.sin(t * 55) * 3)
+
+        # GAME OVER text (shaking)
+        draw_text_outline(
+            FONT_TITLE,
+            "GAME OVER",
+            (200, 0, 0),
+            (0, 0, 0),
+            WIDTH // 2 + shake_x,
+            HEIGHT // 2 - 60 + shake_y
+        )
+
+        # Score text (static)
+        if game_mode == "single":
+            score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
+            screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 40)))
+        else:
+            score_text = FONT_TEXT.render(f"Score winner: {winner}", True, (255, 255, 255))
+            screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 40)))
+
+            score_text2 = FONT_TEXT.render(f"Score loser: {loser}", True, (255, 255, 255))
+            screen.blit(score_text2, score_text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 90)))
+
+        pygame.display.flip()
+        clock.tick(FPS)
+
 
 # == SHOOTING ==
 def shoot(player):
@@ -264,7 +334,6 @@ def shoot(player):
         sound_throw.play()
 
 # == Main Game Loop ==
-highscore = 0
 last_score = None
 running = True
 new_highscore = False
@@ -275,6 +344,9 @@ while running:
 
     # 1. Start screen
     chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
+
+    subtitle = FONT_SMALL.render("Dodge the chaos. Save Christmas.", True, (240, 240, 240))
+    screen.blit(subtitle,subtitle.get_rect(center=(WIDTH // 2, HEIGHT // 4 + 80)))
 
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
@@ -584,10 +656,14 @@ while running:
 
     new_highscore = False
 
-    if last_score > highscore:
-        highscore = last_score
-        save_manager.set_highscore(highscore)  
-        new_highscore = True
+    if game_mode == "single":
+        last_score = scores[players[0]].value
+        score_history.add_score(last_score)
+
+        if last_score > highscore:
+            highscore = last_score
+            new_highscore = True
+            save_manager.set_highscore(highscore)
 
     else:  # multiplayer
         score_winner= max(scores[player].value for player in players)

@@ -1,6 +1,6 @@
 import json
 import os
-from datetime import datetime   # ✅ FIX: import at top
+from datetime import datetime 
 
 
 class SaveManager:
@@ -43,7 +43,6 @@ class SaveManager:
         self.save()
 
 
-# ✅ FIX: OUTSIDE SaveManager
 class ScoreHistory:
     def __init__(self, filename="highscore_history.txt"):
         self.filename = filename

@@ -6,6 +6,7 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+from saveload import SaveManager
 import os
 
 pygame.init()
@@ -61,8 +62,10 @@ except pygame.error as e:
 
 
 # == highscore ==
-highscore = 0
+save_manager = SaveManager()
 
+highscore = save_manager.get_highscore()
+selected_skin_index = save_manager.get_skin()
 
 # == Load background for start screen ==
 try:
@@ -84,7 +87,7 @@ skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
 
-selected_skin_index =0
+
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
@@ -198,6 +201,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
+                    save_manager.set_skin(selected_skin_index)
                     return skins[selected_index], "single"
 
                 if multi_btn.collidepoint(event.pos):
@@ -242,11 +246,19 @@ def show_game_over(screen, score_value):
     pygame.display.update()
     pygame.time.wait(2000)
 
+# == SHOOTING ==
+def shoot(player):
+    global ammo
+    if ammo > 0:
+        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+        ammo -= 1
+        sound_throw.play()
+
 # == Main Game Loop ==
-highscore = 0
 last_score = None
 running = True
 reindeer_event = None
+
 
 while running:
 
@@ -307,6 +319,11 @@ while running:
     LEVEL_UP_DURATION = 60
     show_level_up = False
 
+    # TIMER (alleen voor multiplayer)
+    use_timer = (game_mode == "multi")
+    game_time = 60  # seconden
+    timer_counter = game_time * FPS
+
     # 3. Main game loop
     game_active = True
 
@@ -318,24 +335,34 @@ while running:
             if event.type == pygame.QUIT:
                 running = False
                 game_active = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                if ammo > 0: 
-                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
-                    ammo -= 1
-                    sound_throw.play()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
                     sound_pause.play()
                     if paused:
-                     pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.set_volume(0.1)
                     else:
-                     pygame.mixer.music.set_volume(0.25)
-                if event.key ==pygame.K_SPACE and not paused:
-                    if ammo > 0:
-                        bullets.append(Bullet(player.rect.centerx, player.rect.top))
-                        ammo -= 1
-                        sound_throw.play()
+                        pygame.mixer.music.set_volume(0.25)
+
+            # SINGLEPLAYER: schieten met muis of spatie
+            if game_mode == "single" and not paused:
+                if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                    shoot(player)
+
+            # MULTIPLAYER: elke speler eigen toets
+            if game_mode == "multi" and not paused and event.type == pygame.KEYDOWN:
+                for player in players: 
+                    if player.controls == 'qd' and event.key == pygame.K_z:
+                        shoot(player)
+                    elif player.controls == 'arrows' and event.key == pygame.K_UP:
+                        shoot(player)
+
+        # TIMER UPDATE (alleen multiplayer)
+        if use_timer and not paused:
+            timer_counter -= 1
+            if timer_counter <= 0:
+                game_active = False        
 
         # PAUSED
         if paused:
@@ -377,7 +404,6 @@ while running:
             player.move(keys)
 
         # UPDATE OBJECTS 
-        
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
@@ -440,11 +466,8 @@ while running:
                     bullets.remove(bullet)
                     score.add(5)
                     break
-
-        # if score.value != 0 and score.value % 50 == 0 and score.value != last_reindeer_score and reindeer_event is None:
-        #     reindeer_event = ReindeerEvent(REINDEER_IMAGE)
-        #     last_reindeer_score = score.value
-
+        
+        # REINDEER-EVENT
         if score.value >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
             next_reindeer_score += 200
@@ -498,6 +521,11 @@ while running:
 
         if  500 <= score.value <= 600 and score.value:
             screen.blit(dark_overlay, (0, 0))
+        
+        if use_timer:
+            seconds_left = timer_counter // FPS
+            timer_text = font.render(f"Time: {seconds_left}", True, (255, 255, 255))
+            screen.blit(timer_text, (WIDTH - 150, 10))
 
         pygame.display.update()
 
@@ -505,6 +533,7 @@ while running:
     last_score = score.value
     if score.value > highscore:
         highscore = score.value
+        save_manager.set_highscore(highscore)
     show_game_over(screen, score.value)
 
 

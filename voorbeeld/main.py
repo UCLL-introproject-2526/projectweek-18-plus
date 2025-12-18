@@ -30,6 +30,11 @@ pygame.display.update()
 REINDEER_IMAGE = pygame.image.load("voorbeeld/assets/reindeer_sleigh.png").convert_alpha()
 REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_width() // 8, REINDEER_IMAGE.get_height() // 8))
 
+# == OBJECTS EXPLOSION ==
+EXPLOSION_IMAGE = pygame.image.load("voorbeeld/assets/ontploft.png").convert_alpha()
+EXPLOSION_IMAGE = pygame.transform.scale(EXPLOSION_IMAGE, (90, 90))
+explosions = []
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -468,6 +473,7 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
+                    explosions.append({"pos": obs.rect.center,"timer": 15})
                     game_active = False
                     break
 
@@ -486,6 +492,7 @@ while running:
                     obstacles.remove(obs)
                     bullets.remove(bullet)
                     scores[bullet.owner].add(3)
+                    explosions.append({"pos": obs.rect.center,"timer": 15})
                     break
         
         # REINDEER-EVENT
@@ -546,6 +553,14 @@ while running:
             gift.draw(screen)
         for bullet in bullets:
             bullet.draw(screen)
+        
+        for explosion in explosions[:]:
+            rect = EXPLOSION_IMAGE.get_rect(center=explosion["pos"])
+            screen.blit(EXPLOSION_IMAGE, rect)
+
+            explosion["timer"] -= 1
+            if explosion["timer"] <= 0:
+                explosions.remove(explosion)
 
         if reindeer_event is not None and reindeer_event.active: 
             reindeer_event.update() 

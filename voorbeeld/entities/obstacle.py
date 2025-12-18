@@ -24,7 +24,7 @@ class Obstacle:
         self.rect = pygame.Rect(self.x, self.y, self.breedte, self.hoogte)
 
         self.image = pygame.image.load(image_path).convert_alpha()
-        self.image = pygame.transform.scale(self.image, (55, self.hoogte))
+        self.image = pygame.transform.scale(self.image, (self.breedte, self.hoogte))
 
     def update(self, multiplier=1):
         self.rect.y += self.speed * multiplier

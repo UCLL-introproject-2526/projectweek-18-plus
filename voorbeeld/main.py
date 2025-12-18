@@ -81,8 +81,10 @@ def crop_surface(surface):
 skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Santa_Avatar.png").convert_alpha()),
     crop_surface(pygame.image.load("voorbeeld/assets/Snowman.png").convert_alpha()),
-    crop_surface(pygame.image.load("voorbeeld/assets/Elf.png").convert_alpha())
+    crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
+
+selected_skin_index =0
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
@@ -101,8 +103,9 @@ class Bullet:
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-    selected_index = 0  # start with santa
-
+    game_mode = None
+    global selected_skin_index
+    selected_index = selected_skin_index
     sound_intro.play()
 
     while True:
@@ -125,9 +128,48 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
             last_text = FONT_SMALL.render(f"Last score: {last_score}", True, (0, 0, 0))
             screen.blit(last_text, (WIDTH // 2 - last_text.get_width() // 2, HEIGHT // 4 + 140))
 
+        # === Buttons ===
+        button_width = 250
+        button_height = 50
+        button_spacing = 50
+
+        single_btn = pygame.Rect(
+            WIDTH // 2 - button_width - button_spacing // 2,
+            HEIGHT // 4 + 450,
+            button_width,
+            button_height
+        )
+
+        multi_btn = pygame.Rect(
+            WIDTH // 2 + button_spacing // 2,
+            HEIGHT // 4 + 450,
+            button_width,
+            button_height
+        )
+
+        mouse_pos = pygame.mouse.get_pos()
+
+        # Hover effect
+        single_color = (100, 106, 128) if single_btn.collidepoint(mouse_pos) else (33, 42, 73)
+        multi_color  = (100, 106, 128) if multi_btn.collidepoint(mouse_pos) else (33, 42, 73)
+
+        pygame.draw.rect(screen, single_color, single_btn, border_radius=8)
+        pygame.draw.rect(screen, multi_color, multi_btn, border_radius=8)
+
+        single_text = FONT_SMALL.render("SINGLEPLAYER", True, (255, 255, 255))
+        multi_text  = FONT_SMALL.render("MULTIPLAYER", True, (255, 255, 255))
+
+        screen.blit(
+            single_text,
+            single_text.get_rect(center=single_btn.center)
+        )
+        screen.blit(
+            multi_text,
+            multi_text.get_rect(center=multi_btn.center)
+        )
 
         # Skin select label
-        skin_label = FONT_SMALL.render("Skin Select:", True, (0, 0, 0))
+        skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
         screen.blit(skin_label, (WIDTH // 2 - skin_label.get_width() // 2, HEIGHT // 4 + 260))
 
         # Skins (wheel selector)
@@ -152,15 +194,29 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
 
         # Event handling
         for event in pygame.event.get():
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if single_btn.collidepoint(event.pos):
+                    sound_intro.stop()
+                    selected_skin_index = selected_index
+                    return skins[selected_index], "single"
+
+                if multi_btn.collidepoint(event.pos):
+                    sound_intro.stop()
+                    selected_skin_index = selected_index
+                    return skins[selected_index], "multi"
+
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     sound_intro.stop()
-                    return skins[selected_index]  # return the chosen image
+                    return skins[selected_index], "single"
+
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
+
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skins)
 
@@ -195,7 +251,7 @@ reindeer_event = None
 while running:
 
     # 1. Start screen
-    chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
+    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score)
 
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
@@ -219,7 +275,17 @@ while running:
     #  pygame.event.clear()
 
     #2. Initialize game    
-    player = Player(chosen_image)
+    
+    # player(s)
+    players = []
+    if game_mode == "single":
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
+
+    elif game_mode == "multi":
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
+        players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
+
+
     obstacles = []
     gifts = []
     bullets = [] 
@@ -227,8 +293,8 @@ while running:
     score = Score()
 
     gift_spawn_timer = 0
-    spawn_rate = 60
-    span_rate_base = 60
+    spawn_rate = 80
+    span_rate_base = 80
     ammo = 10
     spawn_timer = 0
     score_timer = 0
@@ -281,7 +347,8 @@ while running:
         
         # NEW BACKGROUNDS
         keys = pygame.key.get_pressed()
-        player.move(keys)
+        for player in players:
+            player.move(keys)
     
         if player.rect.left > WIDTH:
             background.next_level()  
@@ -306,7 +373,8 @@ while running:
 
         # INPUT
         keys = pygame.key.get_pressed()
-        player.move(keys)
+        for player in players:
+            player.move(keys)
 
         # UPDATE OBJECTS 
         
@@ -316,7 +384,7 @@ while running:
             spawn_timer = 0
 
         gift_spawn_timer += 1
-        if gift_spawn_timer >= 2 * spawn_rate:
+        if gift_spawn_timer >= 3 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
@@ -350,18 +418,20 @@ while running:
 
         # COLLISIONS
         for obs in obstacles[:]:
-            if player.hitbox.colliderect(obs.rect):
-                sound_game_over.play()
-                pygame.time.delay(100)
-                game_active = False
-                break
+            for player in players:
+                if player.hitbox.colliderect(obs.rect):
+                    sound_game_over.play()
+                    game_active = False
+                    break
 
         for gift in gifts[:]:
-            if player.hitbox.colliderect(gift.rect):
-                sound_catch.play()
-                score.add(10)
-                ammo += 3
-                gifts.remove(gift)
+            for player in players:
+                if player.hitbox.colliderect(gift.rect):
+                    sound_catch.play()
+                    score.add(10)
+                    ammo += 3
+                    gifts.remove(gift)
+                    break
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -391,7 +461,8 @@ while running:
 
         # DRAW
         background.render(screen)
-        player.draw(screen, keys)
+        for player in players:
+            player.draw(screen, keys)
         score.draw(screen)
 
         font = pygame.font.SysFont(None, 36)

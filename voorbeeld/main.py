@@ -339,9 +339,12 @@ while running:
                      pygame.mixer.music.set_volume(0.1)
                     else:
                      pygame.mixer.music.set_volume(0.25)
-            if event.key ==pygame.K_SPACE and not paused:
+                     
+                if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
-                        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                        for player in players:
+                         bullets.append(Bullet(player.rect.centerx, player.rect.top))
+                        
                         ammo -= 1
                         sound_throw.play()
 

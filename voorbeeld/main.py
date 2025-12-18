@@ -424,7 +424,7 @@ while running:
         # UPDATE OBJECTS 
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
-            obstacles.append(Obstacle())
+            obstacles.append(Obstacle(background.current_index))
             spawn_timer = 0
 
         gift_spawn_timer += 1

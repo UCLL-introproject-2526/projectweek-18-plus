@@ -287,11 +287,11 @@ while running:
     # player(s)
     players = []
     if game_mode == "single":
-        players.append(Player(chosen_image, controls="arrows"))
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
 
     elif game_mode == "multi":
-        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
-        players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80))
+        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
+        players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
 
 
     obstacles = []

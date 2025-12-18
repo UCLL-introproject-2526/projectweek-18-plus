@@ -31,6 +31,7 @@ class Player:
                 self.rect.x -= self.speed
             if keys[pygame.K_d]:
                 self.rect.x += self.speed
+                
         if not self.allow_wrap:
             # alleen in multiplayer
             self.rect.x = max(0, min(WIDTH - self.rect.width, self.rect.x))

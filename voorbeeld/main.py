@@ -258,10 +258,9 @@ def show_game_over(screen, score_value = None , winner = None, loser = None):
 
 # == SHOOTING ==
 def shoot(player):
-    global ammo
-    if ammo > 0:
+    if player_ammo[player] > 0:
         bullets.append(Bullet(player.rect.centerx, player.rect.top, player))
-        ammo -= 1
+        player_ammo[player] -= 1
         sound_throw.play()
 
 # == Main Game Loop ==
@@ -317,10 +316,13 @@ while running:
     for player in players:
         scores[player] = Score()
     
+    # ammo = 10
+    player_ammo = {player: 10 for player in players}
+
+
     gift_spawn_timer = 0
     spawn_rate = 80
     span_rate_base = 80
-    ammo = 10
     spawn_timer = 0
     score_timer = 0
     speed_multiplier = 1
@@ -434,6 +436,13 @@ while running:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
+        # for gift in gifts[:]:   -> zorgen dat er iets gebeurd (wenend kind) als je het pakje niet vangt
+        #     if gift.rect.top > HEIGHT and game_mode == "single":
+        #         font = pygame.font.SysFont(None, 64)
+        #         pause_text = font.render("crying baby", True, (255, 255, 0))
+        #         screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
+        #         gifts.remove(gift)
+
         level_speed_multiplier = 1 + (level - 1) * 0.5
 
         reindeer_speed_multiplier = 1
@@ -471,7 +480,7 @@ while running:
                 if player.hitbox.colliderect(gift.rect):
                     sound_catch.play()
                     scores[player].add(10)
-                    ammo += 3
+                    player_ammo[player] += 3
                     gifts.remove(gift)
                     break
 
@@ -508,17 +517,22 @@ while running:
         if game_mode == "single":
             score = scores[players[0]].value
             text = font.render(f"Score: {score}",True,(255, 255, 255))
-            screen.blit(text, (10, 40))
+            screen.blit(text, (10, 10))
+
+            ammo_text = font.render(f"Ammo: {player_ammo[players[0]]}", True, (255, 255, 255))
+            screen.blit(ammo_text, (10, 40))
 
         else:
             x = 10
             for i, player in enumerate(players):
                 text = font.render(f"Player {i+1} score: {scores[player].value}",True,(255, 255, 255))
-                screen.blit(text, (x, 40))
-                x += WIDTH - 220
+                screen.blit(text, (x, 10))
+                
+                ammo_text = font.render(f"Ammo: {player_ammo[player]}", True, (255, 255, 255))
+                screen.blit(ammo_text, (x, 40))
 
-        ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
-        screen.blit(ammo_text, (10, 10))
+                x += WIDTH - 240
+
 
         if show_level_up and game_mode == "single":
             x = WIDTH // 2
@@ -550,8 +564,10 @@ while running:
         
         if use_timer:
             seconds_left = timer_counter // FPS
-            timer_text = font.render(f"Time: {seconds_left}", True, (255, 255, 255))
-            screen.blit(timer_text, (WIDTH - 150, 10))
+            font = pygame.font.SysFont(None, 45)
+            timer_text = font.render(f"Time: {seconds_left}", True, (33, 42, 73))
+            text_rect = timer_text.get_rect(center=(WIDTH // 2, 10 + timer_text.get_height() // 2))
+            screen.blit(timer_text, text_rect)
 
         pygame.display.update()
 

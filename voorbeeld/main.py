@@ -228,9 +228,9 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         button_height = 50
         button_spacing = 50
 
-        single_btn = pygame.Rect(WIDTH // 2 - button_width - button_spacing // 2, HEIGHT // 4 + 450,button_width,button_height)
+        single_btn = pygame.Rect(WIDTH // 2 - button_width - button_spacing // 2, HEIGHT // 4 + 350,button_width,button_height)
 
-        multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 450,button_width,button_height)
+        multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 350 ,button_width,button_height)
 
         mouse_pos = pygame.mouse.get_pos()
 

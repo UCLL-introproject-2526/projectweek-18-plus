@@ -105,7 +105,6 @@ class Bullet:
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
     global selected_skin_index
-    selected_index = 0 # start with santa
     selected_index = selected_skin_index
 
     sound_intro.play()
@@ -225,7 +224,7 @@ while running:
     #  pygame.event.clear()
 
     #2. Initialize game    
-    player = Player(skins[selected_skin_index])
+    player = Player(chosen_image)
     obstacles = []
     gifts = []
     bullets = [] 

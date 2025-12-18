@@ -20,6 +20,8 @@ class Player:
         self.hitbox = self.rect.inflate(-20, -15)
 
         self.hit_flash_timer = 0
+        self.flash_duration = 10
+        self.flash_interval = 2
 
     def move(self, keys):
         if self.controls == "arrows":
@@ -41,15 +43,16 @@ class Player:
         self.hitbox.center = self.rect.center
 
     def hit(self):
-        self.hit_flash_timer = 10
+        self.hit_flash_timer = self.flash_duration
 
 
     def draw(self, screen, keys):
 
         if self.hit_flash_timer > 0:
-            temp_image = self.image.copy()
-            temp_image.fill((255, 0, 0, 100), special_flags=pygame.BLEND_RGBA_ADD)
-            screen.blit(temp_image, self.rect)
+            if (self.hit_flash_timer // self.flash_interval) % 2 == 0:
+                temp_image = self.image.copy()
+                temp_image.fill((255, 0, 0, 150), special_flags=pygame.BLEND_RGBA_ADD)
+                screen.blit(temp_image, self.rect)
             self.hit_flash_timer -= 1
             return
         
@@ -79,6 +82,8 @@ class Player:
 #         self.image = pygame.transform.scale(self.image, (70, 80))
 
 #         self.hit_flash_timer = 0
+#         self.flash_duration = 10
+#         self.flash_interval = 2
 
 #     def move(self, keys):
 #         if keys[pygame.K_LEFT]:
@@ -95,9 +100,10 @@ class Player:
 #     def draw(self, screen, keys):
 
 #     if self.hit_flash_timer > 0:
+#         if (self.hit_flash_timer // self.flash_interval) % 2 == 0:
 #         temp_image = self.image.copy()
-#         temp_image.fill((255, 0, 0, 100), special_flags=pygame.BLEND_RGBA_ADD)
-#         screen.blit(temp_image, self.rect)
+#         temp_image.fill((255, 0, 0, 150), special_flags=pygame.BLEND_RGBA_ADD)
+#        screen.blit(temp_image, self.rect)
 #         self.hit_flash_timer -= 1
 #          return
 #         if keys[pygame.K_LEFT]:

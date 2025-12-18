@@ -46,28 +46,38 @@ class Player:
         self.hit_flash_timer = self.flash_duration
 
 
+    
     def draw(self, screen, keys):
-
-        if self.hit_flash_timer > 0:
-            if (self.hit_flash_timer // self.flash_interval) % 2 == 0:
-                temp_image = self.image.copy()
-                temp_image.fill((255, 0, 0, 150), special_flags=pygame.BLEND_RGBA_ADD)
-                screen.blit(temp_image, self.rect)
-            self.hit_flash_timer -= 1
-            return
-        
         flipped = False
-
         if self.controls == "arrows" and keys[pygame.K_LEFT]:
             flipped = True
         if self.controls == "qd" and keys[pygame.K_q]:
             flipped = True
 
-        if flipped:
-            screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
+        # Knipper-effect bij botsing
+        if self.hit_flash_timer > 0:
+            if self.hit_flash_timer % (2 * self.flash_interval) < self.flash_interval:
+                # Rood tint
+                temp_image = self.image.copy()
+                temp_image.fill((255, 0, 0, 150), special_flags=pygame.BLEND_RGBA_ADD)
+                if flipped:
+                    screen.blit(pygame.transform.flip(temp_image, True, False), self.rect)
+                else:
+                    screen.blit(temp_image, self.rect)
+            else:
+               # Normale afbeelding
+                if flipped:
+                    screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
+                else:
+                    screen.blit(self.image, self.rect)
+            self.hit_flash_timer -= 1
         else:
-            screen.blit(self.image, self.rect)
-
+            # Normale draw
+            if flipped:
+                screen.blit(pygame.transform.flip(self.image, True, False), self.rect)
+            else:
+                screen.blit(self.image, self.rect)
+        
 # class Player:
 #     def __init__(self):
 #         self.width = 50

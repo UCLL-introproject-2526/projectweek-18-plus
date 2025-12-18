@@ -35,7 +35,7 @@ REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_widt
 SANTA_HAT = pygame.image.load("voorbeeld/assets/santa_hat.png").convert_alpha()
 SANTA_HAT = pygame.transform.scale(SANTA_HAT, (48, 36))
 
-GAME_OVER_BG = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
+GAME_OVER_BG = pygame.image.load("voorbeeld/assets/santa dead.webp").convert()
 GAME_OVER_BG = pygame.transform.scale(GAME_OVER_BG, (WIDTH, HEIGHT))
 
 # == Fonts ==

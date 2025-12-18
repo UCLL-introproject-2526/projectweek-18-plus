@@ -103,7 +103,7 @@ class Bullet:
         pygame.draw.rect(screen, (255, 255, 255), (self.rect.x + 5, self.rect.y, 6, 12))
 
 # == Start Screen ==
-def show_front_screen(screen, start_background, highscore, last_score=None):
+def show_front_screen(screen, start_background, highscore, last_score=None, new_highscore=False):
     game_mode = None
     global selected_skin_index
     selected_index = selected_skin_index
@@ -120,6 +120,10 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
 
         hs_text = FONT_TEXT.render(f"Highscore: {highscore}", True, (130, 5, 24))
         screen.blit(hs_text, (WIDTH // 2 - hs_text.get_width() // 2, HEIGHT // 4 + 90))
+
+        if new_highscore:
+            new_text = FONT_SMALL.render("New Highscore!", True,(22,101,190))
+            screen.blit(new_text, (WIDTH // 2 - new_text.get_width() // 2, HEIGHT // 4 + 60))
 
         instruction = FONT_SMALL.render("Press SPACE to start", True, (0, 0, 0))
         screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 4 + 200))
@@ -160,14 +164,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
         single_text = FONT_SMALL.render("SINGLEPLAYER", True, (255, 255, 255))
         multi_text  = FONT_SMALL.render("MULTIPLAYER", True, (255, 255, 255))
 
-        screen.blit(
-            single_text,
-            single_text.get_rect(center=single_btn.center)
-        )
-        screen.blit(
-            multi_text,
-            multi_text.get_rect(center=multi_btn.center)
-        )
+        screen.blit(single_text,single_text.get_rect(center=single_btn.center))
+        screen.blit(multi_text,multi_text.get_rect(center=multi_btn.center))
 
         # Skin select label
         skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
@@ -267,32 +265,37 @@ def shoot(player):
 highscore = 0
 last_score = None
 running = True
+new_highscore = False
 reindeer_event = None
 
 
 while running:
 
     # 1. Start screen
-    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score)
+    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
 
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
     how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
 
-    waiting_for_space = True
+    waiting_for_start = True
 
-    while waiting_for_space:
+    while waiting_for_start:
         screen.blit(how_to_play,(0,0))
         pygame.display.update()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-                waiting_for_space = False
+                waiting_for_start = False
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    waiting_for_space = False
+                    waiting_for_start = False
+            
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1: 
+                 waiting_for_start = False
 
     #  pygame.event.clear()
 
@@ -577,10 +580,13 @@ while running:
     score_winner = None
     score_loser = None
 
+    new_highscore = False
+
     if game_mode == "single":
         last_score = scores[players[0]].value
         if last_score > highscore:
             highscore = last_score
+            new_highscore = True
 
     else:  # multiplayer
         score_winner= max(scores[player].value for player in players)

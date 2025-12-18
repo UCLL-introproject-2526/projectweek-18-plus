@@ -680,7 +680,7 @@ while running:
 
     if winner_text:
         font = pygame.font.Font(None, 48)
-        text_surf = FONT_TEXT.render(winner_text, True, (221, 220, 114))
+        text_surf = FONT_TEXT.render(winner_text, True, (0, 0, 0))
         text_rect = text_surf.get_rect(center=(WIDTH//2, HEIGHT//2 + 140))
         screen.blit(text_surf, text_rect)
         pygame.display.update()

@@ -237,7 +237,8 @@ def draw_text_outline(font, text, color, outline, x, y):
 
 def show_game_over(screen, score_value = None , winner = None, loser = None):
     draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH // 2, HEIGHT // 2)
-    if game_mode == "Single":
+    
+    if game_mode == "single":
         score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
         score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
         screen.blit(score_text, score_rect)
@@ -505,15 +506,14 @@ while running:
         font = pygame.font.SysFont(None, 36)
         
         if game_mode == "single":
-            scores[players[0]].draw(screen)
+            score = scores[players[0]].value
+            text = font.render(f"Score: {score}",True,(255, 255, 255))
+            screen.blit(text, (10, 40))
+
         else:
             x = 10
             for i, player in enumerate(players):
-                text = font.render(
-                    f"Player {i+1} score: {scores[player].value}",
-                    True,
-                    (255, 255, 255)
-                )
+                text = font.render(f"Player {i+1} score: {scores[player].value}",True,(255, 255, 255))
                 screen.blit(text, (x, 40))
                 x += WIDTH - 220
 
@@ -560,11 +560,11 @@ while running:
     score_for_highscore = None
     score_winner = None
     score_loser = None
-    
+
     if game_mode == "single":
-        score_for_highscore = scores[players[0]].value
-        if score_for_highscore > highscore:
-            highscore = score_for_highscore
+        last_score = scores[players[0]].value
+        if last_score > highscore:
+            highscore = last_score
 
     else:  # multiplayer
         score_winner= max(scores[player].value for player in players)
@@ -584,7 +584,7 @@ while running:
         else:
             winner_text = "It's a draw!"
 
-    show_game_over(screen, score_for_highscore, score_winner, score_loser)
+    show_game_over(screen, last_score, score_winner, score_loser)
 
     if winner_text:
         font = pygame.font.Font(None, 48)

@@ -316,6 +316,11 @@ while running:
     LEVEL_UP_DURATION = 60
     show_level_up = False
 
+    # TIMER (alleen voor multiplayer)
+    use_timer = (game_mode == "multi")
+    game_time = 60  # seconden
+    timer_counter = game_time * FPS
+
     # 3. Main game loop
     game_active = True
 
@@ -323,7 +328,6 @@ while running:
         clock.tick(FPS)
 
         # EVENTS
-        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -350,7 +354,12 @@ while running:
                         shoot(player)
                     elif player.controls == 'arrows' and event.key == pygame.K_UP:
                         shoot(player)
-                
+
+        # TIMER UPDATE (alleen multiplayer)
+        if use_timer and not paused:
+            timer_counter -= 1
+            if timer_counter <= 0:
+                game_active = False        
 
         # PAUSED
         if paused:
@@ -392,7 +401,6 @@ while running:
             player.move(keys)
 
         # UPDATE OBJECTS 
-        
         spawn_timer += 1
         if spawn_timer >= spawn_rate:
             obstacles.append(Obstacle())
@@ -455,11 +463,8 @@ while running:
                     bullets.remove(bullet)
                     score.add(5)
                     break
-
-        # if score.value != 0 and score.value % 50 == 0 and score.value != last_reindeer_score and reindeer_event is None:
-        #     reindeer_event = ReindeerEvent(REINDEER_IMAGE)
-        #     last_reindeer_score = score.value
-
+        
+        # REINDEER-EVENT
         if score.value >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
             next_reindeer_score += 200
@@ -513,6 +518,11 @@ while running:
 
         if  500 <= score.value <= 600 and score.value:
             screen.blit(dark_overlay, (0, 0))
+        
+        if use_timer:
+            seconds_left = timer_counter // FPS
+            timer_text = font.render(f"Time: {seconds_left}", True, (255, 255, 255))
+            screen.blit(timer_text, (WIDTH - 150, 10))
 
         pygame.display.update()
 

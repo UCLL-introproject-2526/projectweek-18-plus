@@ -91,9 +91,10 @@ SMALL_SIZE = (50, 60)       #linksrechts preview
 
 # == Bullet class ==
 class Bullet:
-    def __init__(self, x, y):
+    def __init__(self, x, y, owner):
         self.rect = pygame.Rect(x-5, y, 16, 22)
         self.speed = -8
+        self.owner = owner
 
     def update(self):
         self.rect.y += self.speed
@@ -234,11 +235,23 @@ def draw_text_outline(font, text, color, outline, x, y):
     screen.blit(text_surf, text_rect)
 
 
-def show_game_over(screen, score_value):
+def show_game_over(screen, score_value = None , winner = None, loser = None):
     draw_text_outline(FONT_TITLE, "GAME OVER", (200,0,0), (0,0,0), WIDTH // 2, HEIGHT // 2)
-    score_text = FONT_TEXT.render(f"Score: {score_value}", True, (0, 0, 0))
-    score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
-    screen.blit(score_text, score_rect)
+    if game_mode == "Single":
+        score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+        screen.blit(score_text, score_rect)
+    else: 
+        # Score winner
+        score_text = FONT_TEXT.render(f"Score winner: {winner}", True, (255, 255, 255))
+        score_rect = score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+        screen.blit(score_text, score_rect)
+
+        # Score loser
+        score_text2 = FONT_TEXT.render(f"Score loser: {loser}", True, (255, 255, 255))
+        score_rect2 = score_text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
+        screen.blit(score_text2, score_rect2)
+
     pygame.display.update()
     pygame.time.wait(2000)
 
@@ -246,7 +259,7 @@ def show_game_over(screen, score_value):
 def shoot(player):
     global ammo
     if ammo > 0:
-        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+        bullets.append(Bullet(player.rect.centerx, player.rect.top, player))
         ammo -= 1
         sound_throw.play()
 
@@ -299,7 +312,11 @@ while running:
     gifts = []
     bullets = [] 
     background = Background()
-    score = Score()
+    scores = {}
+    for player in players:
+        scores[player] = Score()
+    
+    total_score = sum(scores[player].value for player in players)
 
     gift_spawn_timer = 0
     spawn_rate = 80
@@ -386,7 +403,7 @@ while running:
 
 
         # LEVELS
-        new_level = score.value // level_threshold + 1
+        new_level = total_score // level_threshold + 1
         if new_level != level:
             level = new_level
             sound_level_up.play()
@@ -431,7 +448,8 @@ while running:
 
         score_timer += 1
         if score_timer >= FPS:
-            score.add(1)
+            for player in players:
+                scores[player].add(1)
             score_timer = 0
 
         for bullet in bullets[:]:
@@ -451,7 +469,7 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(gift.rect):
                     sound_catch.play()
-                    score.add(10)
+                    scores[player].add(10)
                     ammo += 3
                     gifts.remove(gift)
                     break
@@ -461,11 +479,11 @@ while running:
                 if bullet.rect.colliderect(obs.rect):
                     obstacles.remove(obs)
                     bullets.remove(bullet)
-                    score.add(5)
+                    scores[bullet.owner].add(3)
                     break
         
         # REINDEER-EVENT
-        if score.value >= next_reindeer_score:
+        if total_score >= next_reindeer_score:
             reindeer_event = ReindeerEvent(REINDEER_IMAGE)
             next_reindeer_score += 200
 
@@ -483,17 +501,28 @@ while running:
         background.render(screen)
         for player in players:
             player.draw(screen, keys)
-        score.draw(screen)
-
+        
         font = pygame.font.SysFont(None, 36)
+        
+        if game_mode == "single":
+            scores[players[0]].draw(screen)
+        else:
+            x = 10
+            for i, player in enumerate(players):
+                text = font.render(
+                    f"Player {i+1} score: {scores[player].value}",
+                    True,
+                    (255, 255, 255)
+                )
+                screen.blit(text, (x, 40))
+                x += WIDTH - 220
+
         ammo_text = font.render(f"Ammo: {ammo}", True, (255, 255, 255))
-        screen.blit(ammo_text, (10, 40))
+        screen.blit(ammo_text, (10, 10))
 
         if show_level_up:
-            # level_up_text = FONT_TITLE.render(f"LEVEL {level}!", True, (255, 255, 0))
             x = WIDTH // 2
             y = HEIGHT // 2
-            # screen.blit(level_up_text, (WIDTH // 2 - level_up_text.get_width() // 2, HEIGHT // 2))
             draw_text_outline(FONT_TITLE, f"LEVEL {level}!", (255, 255, 0), "white", x, y)
 
             level_up_timer -= 1
@@ -516,7 +545,7 @@ while running:
         dark_overlay.set_alpha(200) 
         dark_overlay.fill((0, 0, 0)) 
 
-        if  500 <= score.value <= 600 and score.value:
+        if  500 <= total_score <= 600: 
             screen.blit(dark_overlay, (0, 0))
         
         if use_timer:
@@ -527,10 +556,43 @@ while running:
         pygame.display.update()
 
     # 4. Game Over 
-    last_score = score.value
-    if score.value > highscore:
-        highscore = score.value
-    show_game_over(screen, score.value)
+
+    score_for_highscore = None
+    score_winner = None
+    score_loser = None
+    
+    if game_mode == "single":
+        score_for_highscore = scores[players[0]].value
+        if score_for_highscore > highscore:
+            highscore = score_for_highscore
+
+    else:  # multiplayer
+        score_winner= max(scores[player].value for player in players)
+        score_loser = min(scores[player].value for player in players)
+        
+    
+    winner_text = None
+    if game_mode == "multi":
+        p1, p2 = players
+        s1 = scores[p1].value
+        s2 = scores[p2].value
+
+        if s1 > s2:
+            winner_text = "Player 1 wins!"
+        elif s2 > s1:
+            winner_text = "Player 2 wins!"
+        else:
+            winner_text = "It's a draw!"
+
+    show_game_over(screen, score_for_highscore, score_winner, score_loser)
+
+    if winner_text:
+        font = pygame.font.Font(None, 48)
+        text_surf = FONT_TEXT.render(winner_text, True, (221, 220, 114))
+        text_rect = text_surf.get_rect(center=(WIDTH//2, HEIGHT//2 + 140))
+        screen.blit(text_surf, text_rect)
+        pygame.display.update()
+        pygame.time.wait(1000)
 
 
 pygame.quit()

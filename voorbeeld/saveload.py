@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime   # ✅ FIX: import at top
 
 
 class SaveManager:
@@ -40,3 +41,16 @@ class SaveManager:
     def set_skin(self, index):
         self.data["selected_skin"] = index
         self.save()
+
+
+# ✅ FIX: OUTSIDE SaveManager
+class ScoreHistory:
+    def __init__(self, filename="highscore_history.txt"):
+        self.filename = filename
+
+    def add_score(self, score):
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+        line = f"{timestamp}  Score: {score}\n"
+
+        with open(self.filename, "a") as f:
+            f.write(line)

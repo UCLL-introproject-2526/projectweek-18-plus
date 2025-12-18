@@ -6,7 +6,7 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
-from saveload import SaveManager
+from saveload import SaveManager, ScoreHistory
 import os
 
 pygame.init()
@@ -63,6 +63,7 @@ except pygame.error as e:
 
 # == highscore ==
 save_manager = SaveManager()
+score_history = ScoreHistory()
 
 highscore = save_manager.get_highscore()
 selected_skin_index = save_manager.get_skin()
@@ -530,11 +531,15 @@ while running:
         pygame.display.update()
 
     # 4. Game Over 
-    last_score = score.value
-    if score.value > highscore:
-        highscore = score.value
-        save_manager.set_highscore(highscore)
-    show_game_over(screen, score.value)
+last_score = score.value
+
+score_history.add_score(score.value)
+
+if score.value > highscore:
+    highscore = score.value
+    save_manager.set_highscore(highscore)
+
+show_game_over(screen, score.value)
 
 
 pygame.quit()

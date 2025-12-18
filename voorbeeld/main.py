@@ -86,10 +86,6 @@ skins = [
 
 selected_skin_index =0
 
-<<<<<<< HEAD
-
-=======
->>>>>>> e25f18e5eea15096ed389bd00dd21443ae1a74db
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
 
@@ -107,15 +103,9 @@ class Bullet:
 
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None):
-<<<<<<< HEAD
-    global selected_skin_index
-    selected_index = selected_skin_index
-
-=======
     game_mode = None
     global selected_skin_index
     selected_index = selected_skin_index
->>>>>>> e25f18e5eea15096ed389bd00dd21443ae1a74db
     sound_intro.play()
 
     while True:
@@ -222,13 +212,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None):
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     sound_intro.stop()
-<<<<<<< HEAD
-                    selected_skin_index = selected_index
-                    return skins[selected_index]  # return the chosen image
-=======
                     return skins[selected_index], "single"
 
->>>>>>> e25f18e5eea15096ed389bd00dd21443ae1a74db
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
 

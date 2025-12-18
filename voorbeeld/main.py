@@ -35,6 +35,9 @@ REINDEER_IMAGE = pygame.transform.scale(REINDEER_IMAGE, (REINDEER_IMAGE.get_widt
 SANTA_HAT = pygame.image.load("voorbeeld/assets/santa_hat.png").convert_alpha()
 SANTA_HAT = pygame.transform.scale(SANTA_HAT, (48, 36))
 
+GAME_OVER_BG = pygame.image.load("voorbeeld/assets/background start.jpg").convert()
+GAME_OVER_BG = pygame.transform.scale(GAME_OVER_BG, (WIDTH, HEIGHT))
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 72)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -291,17 +294,13 @@ def show_game_over(screen, score_value=None, winner=None, loser=None):
 
         t = (pygame.time.get_ticks() - start_time) / 1000.0
 
-        # Dark overlay
-        overlay = pygame.Surface((WIDTH, HEIGHT))
-        overlay.set_alpha(160)
-        overlay.fill((0, 0, 0))
-        screen.blit(overlay, (0, 0))
+        # 🖼 IMAGE background instead of black
+        screen.blit(GAME_OVER_BG, (0, 0))
 
-        # 🔥 SHAKE EFFECT
+        # SHAKE effect
         shake_x = int(math.sin(t * 40) * 6)
         shake_y = int(math.sin(t * 55) * 3)
 
-        # GAME OVER text (shaking)
         draw_text_outline(
             FONT_TITLE,
             "GAME OVER",
@@ -311,19 +310,13 @@ def show_game_over(screen, score_value=None, winner=None, loser=None):
             HEIGHT // 2 - 60 + shake_y
         )
 
-        # Score text (static)
         if game_mode == "single":
-            score_text = FONT_TEXT.render(f"Score: {score_value}", True, (255, 255, 255))
+            score_text = FONT_TEXT.render(f"Score: {score_value}", True, (0, 0, 0))
             screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 40)))
-        else:
-            score_text = FONT_TEXT.render(f"Score winner: {winner}", True, (255, 255, 255))
-            screen.blit(score_text, score_text.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 40)))
-
-            score_text2 = FONT_TEXT.render(f"Score loser: {loser}", True, (255, 255, 255))
-            screen.blit(score_text2, score_text2.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 90)))
 
         pygame.display.flip()
         clock.tick(FPS)
+
 
 
 # == SHOOTING ==

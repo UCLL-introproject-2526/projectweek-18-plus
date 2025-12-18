@@ -259,14 +259,7 @@ reindeer_event = None
 while running:
 
     # 1. Start screen
-<<<<<<< HEAD
-    chosen_image = show_front_screen(screen, start_background,  highscore, last_score)
-    pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
-    pygame.mixer.music.set_volume(0.7)      
-    pygame.mixer.music.play(-1)
-=======
     chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score)
->>>>>>> 5b958185cd1c1e62bd03b420ff263df4eeb299a7
 
     #uitleg scherm
     how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
@@ -401,16 +394,12 @@ while running:
             obstacles.append(Obstacle())
             spawn_timer = 0
 
-<<<<<<< HEAD
-        level_speed_multiplier = 1 + (level - 1) * 0.15
-=======
         gift_spawn_timer += 1
         if gift_spawn_timer >= 3 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
         level_speed_multiplier = 1 + (level - 1) * 0.3
->>>>>>> 5b958185cd1c1e62bd03b420ff263df4eeb299a7
 
         reindeer_speed_multiplier = 1
 
@@ -443,20 +432,11 @@ while running:
 
         # COLLISIONS
         for obs in obstacles[:]:
-<<<<<<< HEAD
-            if player.hitbox.colliderect(obs.rect):
-                sound_game_over.play()
-                pygame.mixer.music.fadeout(500)
-                pygame.time.delay(100)
-                game_active = False
-                break
-=======
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
                     game_active = False
                     break
->>>>>>> 5b958185cd1c1e62bd03b420ff263df4eeb299a7
 
         for gift in gifts[:]:
             for player in players:

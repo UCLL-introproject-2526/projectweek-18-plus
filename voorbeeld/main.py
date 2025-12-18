@@ -8,10 +8,15 @@ from utils.reindeer import ReindeerEvent
 from background import Background
 from saveload import SaveManager, ScoreHistory
 import os
-import random
 
 pygame.init()
 pygame.mixer.init()
+
+pygame.mixer.set_num_channels(16)
+
+MAX_CRYING_CHANNELS = 8
+crying_channels = [pygame.mixer.Channel(i) for i in range(MAX_CRYING_CHANNELS)]
+
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
@@ -40,7 +45,7 @@ try:
     pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(-1)
-
+    sound_crying = pygame.mixer.Sound(os.path.join(SOUND_PATH, "baby-crying-high-pitch-434113.wav"))
 
     print("All sounds loaded successfully!")
 except pygame.error as e:
@@ -74,19 +79,12 @@ try:
     pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
     pygame.mixer.music.set_volume(0.7) 
     pygame.mixer.music.play(-1)
+    sound_crying = pygame.mixer.Sound(os.path.join(SOUND_PATH, "baby-crying-high-pitch-434113.wav"))
     
     print("All sounds loaded successfully!")
 
 except pygame.error as e:
     print("Error loading sounds:", e)
-
-# == SNOWFLAKES ==
-snowflakes = []
-for i in range(150):
-    x = random.randint(0, WIDTH)
-    y = random.randint(0, HEIGHT)
-    speed = random.uniform(1, 3)
-    snowflakes.append([x, y, speed])
 
 # == highscore ==
 save_manager = SaveManager()
@@ -332,9 +330,13 @@ while waiting_for_start:
 
     obstacles = []
     gifts = []
-    bullets = [] 
+    bullets = []
     background = Background()
     scores = {}
+
+    crying_children = 0
+    max_crying_channels = 8
+
     for player in players:
         scores[player] = Score()
     
@@ -356,8 +358,6 @@ while waiting_for_start:
     LEVEL_UP_DURATION = 60
     show_level_up = False
     current_screen = 1
-
-    dead_player = None
 
     # TIMER (alleen voor multiplayer)
     use_timer = (game_mode == "multi")
@@ -472,12 +472,16 @@ while waiting_for_start:
             gifts.append(Gift())
             gift_spawn_timer = 0
 
-        # for gift in gifts[:]:   -> zorgen dat er iets gebeurd (wenend kind) als je het pakje niet vangt
-        #     if gift.rect.top > HEIGHT and game_mode == "single":
-        #         font = pygame.font.SysFont(None, 64)
-        #         pause_text = font.render("crying baby", True, (255, 255, 0))
-        #         screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
-        #         gifts.remove(gift)
+        for gift in gifts[:]:
+         if gift.rect.top > HEIGHT:
+          gifts.remove(gift)
+
+        # === START CRYING CHILD ===
+        if crying_children < max_crying_channels:
+            channel = crying_channels[crying_children]
+            channel.play(sound_crying, loops=-1)
+            crying_children += 1
+
 
         level_speed_multiplier = 1 + (level - 1) * 0.5
 
@@ -506,8 +510,7 @@ while waiting_for_start:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
-                    explosions.append({"pos": obs.rect.center,"timer": 10})
-                    dead_player = player
+                    explosions.append({"pos": obs.rect.center,"timer": 15})
                     game_active = False
                     break
 
@@ -518,7 +521,11 @@ while waiting_for_start:
                     scores[player].add(10)
                     player_ammo[player] += 3
                     gifts.remove(gift)
-                    break
+
+                if crying_children > 0:
+                 crying_children -= 1
+                crying_channels[crying_children].stop()
+                break
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -544,13 +551,6 @@ while waiting_for_start:
     if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
         
-        # SNOW FALLING
-    if background.current_index == 0 and not paused:
-            for flake in snowflakes:
-                flake[1] += flake[2]
-                if flake[1] > HEIGHT:
-                    flake[1] = -5
-                    flake[0] = random.randint(0, WIDTH)
 
         # DRAW
     background.render(screen)
@@ -587,11 +587,6 @@ while waiting_for_start:
             level_up_timer -= 1
             if level_up_timer <= 0:
                 show_level_up = False
-
-    if background.current_index == 0:
-            for flake in snowflakes:
-                pygame.draw.rect(screen, (255, 255, 255), (flake[0], flake[1], 2, 2))
-
 
     for obs in obstacles:
             obs.draw(screen)
@@ -637,8 +632,6 @@ while waiting_for_start:
 
     new_highscore = False
 
-    winner_text = None
-
     if game_mode == "single":
         last_score = scores[players[0]].value
         score_history.add_score(last_score)
@@ -649,38 +642,29 @@ while waiting_for_start:
             save_manager.set_highscore(highscore)
 
     else:  # multiplayer
-        if dead_player is not None:
-            loser = dead_player
-            winner = players[0] if players[1] == loser else players[1]
+        score_winner= max(scores[player].value for player in players)
+        score_loser = min(scores[player].value for player in players)
+        
+    
+    winner_text = None
+    if game_mode == "multi":
+        p1, p2 = players
+        s1 = scores[p1].value
+        s2 = scores[p2].value
 
-            score_winner = scores[winner].value
-            score_loser = scores[loser].value
-
-            if winner == players[0]:
-                winner_text = "Player 1 wins!"
-            else:
-                winner_text = "Player 2 wins!"
-
+        if s1 > s2:
+            winner_text = "Player 1 wins!"
+        elif s2 > s1:
+            winner_text = "Player 2 wins!"
         else:
-            p1, p2 = players
-            s1 = scores[p1].value
-            s2 = scores[p2].value
+            winner_text = "It's a draw!"
 
-            if s1 > s2:
-                winner = p1
-                loser = p2
-                winner_text = "Player 1 wins!"
-            elif s2 > s1:
-                winner = p2
-                loser = p1
-                winner_text = "Player 2 wins!"
-            else:
-                winner = None
-                loser = None
-                winner_text = "It's a draw!"
+        for channel in crying_channels:
+         channel.stop()
+         crying_children = 0
 
-            score_winner = max(s1, s2)
-            score_loser = min(s1, s2)
+
+    show_game_over(screen, last_score, score_winner, score_loser)
 
     if winner_text:
         font = pygame.font.Font(None, 48)

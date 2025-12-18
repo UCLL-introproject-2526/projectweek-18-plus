@@ -8,6 +8,7 @@ from utils.reindeer import ReindeerEvent
 from background import Background
 from saveload import SaveManager, ScoreHistory
 import os
+import random
 
 pygame.init()
 pygame.mixer.init()
@@ -65,6 +66,13 @@ try:
 except pygame.error as e:
     print("Error loading sounds:", e)
 
+# == SNOWFLAKES ==
+snowflakes = []
+for i in range(150):
+    x = random.randint(0, WIDTH)
+    y = random.randint(0, HEIGHT)
+    speed = random.uniform(1, 3)
+    snowflakes.append([x, y, speed])
 
 # == highscore ==
 save_manager = SaveManager()
@@ -529,6 +537,14 @@ while running:
         
         if reindeer_event is not None and not reindeer_event.active:
             reindeer_event = None
+        
+        # SNOW FALLING
+        if background.current_index == 0 and not paused:
+            for flake in snowflakes:
+                flake[1] += flake[2]
+                if flake[1] > HEIGHT:
+                    flake[1] = -5
+                    flake[0] = random.randint(0, WIDTH)
 
         # DRAW
         background.render(screen)
@@ -565,6 +581,10 @@ while running:
             level_up_timer -= 1
             if level_up_timer <= 0:
                 show_level_up = False
+
+        if background.current_index == 0:
+            for flake in snowflakes:
+                pygame.draw.rect(screen, (255, 255, 255), (flake[0], flake[1], 2, 2))
 
 
         for obs in obstacles:

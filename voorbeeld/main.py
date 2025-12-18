@@ -6,6 +6,7 @@ from entities.player import Player
 from utils.score import Score
 from utils.reindeer import ReindeerEvent
 from background import Background
+from saveload import SaveManager, ScoreHistory
 import os
 
 pygame.init()
@@ -61,8 +62,11 @@ except pygame.error as e:
 
 
 # == highscore ==
-highscore = 0
+save_manager = SaveManager()
+score_history = ScoreHistory()
 
+highscore = save_manager.get_highscore()
+selected_skin_index = save_manager.get_skin()
 
 # == Load background for start screen ==
 try:
@@ -138,19 +142,9 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         button_height = 50
         button_spacing = 50
 
-        single_btn = pygame.Rect(
-            WIDTH // 2 - button_width - button_spacing // 2,
-            HEIGHT // 4 + 450,
-            button_width,
-            button_height
-        )
+        single_btn = pygame.Rect(WIDTH // 2 - button_width - button_spacing // 2, HEIGHT // 4 + 450,button_width,button_height)
 
-        multi_btn = pygame.Rect(
-            WIDTH // 2 + button_spacing // 2,
-            HEIGHT // 4 + 450,
-            button_width,
-            button_height
-        )
+        multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 450,button_width,button_height)
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -262,7 +256,6 @@ def shoot(player):
         sound_throw.play()
 
 # == Main Game Loop ==
-highscore = 0
 last_score = None
 running = True
 new_highscore = False
@@ -584,9 +577,12 @@ while running:
 
     if game_mode == "single":
         last_score = scores[players[0]].value
+        score_history.add_score(last_score)
+
         if last_score > highscore:
             highscore = last_score
             new_highscore = True
+            save_manager.set_highscore(highscore)
 
     else:  # multiplayer
         score_winner= max(scores[player].value for player in players)

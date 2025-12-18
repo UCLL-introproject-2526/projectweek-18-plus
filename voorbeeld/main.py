@@ -242,11 +242,20 @@ def show_game_over(screen, score_value):
     pygame.display.update()
     pygame.time.wait(2000)
 
+# == SHOOTING ==
+def shoot(player):
+    global ammo
+    if ammo > 0:
+        bullets.append(Bullet(player.rect.centerx, player.rect.top))
+        ammo -= 1
+        sound_throw.play()
+
 # == Main Game Loop ==
 highscore = 0
 last_score = None
 running = True
 reindeer_event = None
+
 
 while running:
 
@@ -314,28 +323,34 @@ while running:
         clock.tick(FPS)
 
         # EVENTS
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
                 game_active = False
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
-                if ammo > 0: 
-                    bullets.append(Bullet(player.rect.centerx, player.rect.top))
-                    ammo -= 1
-                    sound_throw.play()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
                     sound_pause.play()
                     if paused:
-                     pygame.mixer.music.set_volume(0.1)
+                        pygame.mixer.music.set_volume(0.1)
                     else:
-                     pygame.mixer.music.set_volume(0.25)
-                if event.key ==pygame.K_SPACE and not paused:
-                    if ammo > 0:
-                        bullets.append(Bullet(player.rect.centerx, player.rect.top))
-                        ammo -= 1
-                        sound_throw.play()
+                        pygame.mixer.music.set_volume(0.25)
+
+            # SINGLEPLAYER: schieten met muis of spatie
+            if game_mode == "single" and not paused:
+                if (event.type == pygame.MOUSEBUTTONDOWN and event.button == 1) or (event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE):
+                    shoot(player[0])
+
+            # MULTIPLAYER: elke speler eigen toets
+            if game_mode == "multi" and not paused and event.type == pygame.KEYDOWN:
+                for player in players: 
+                    if player.controls == 'qd' and event.key == pygame.K_z:
+                        shoot(player)
+                    elif player.controls == 'arrows' and event.key == pygame.K_UP:
+                        shoot(player)
+                
 
         # PAUSED
         if paused:

@@ -342,6 +342,7 @@ while running:
     level_threshold = 50
     LEVEL_UP_DURATION = 60
     show_level_up = False
+    current_screen = 1
 
     # TIMER (alleen voor multiplayer)
     use_timer = (game_mode == "multi")
@@ -398,18 +399,29 @@ while running:
         
         # NEW BACKGROUNDS
         keys = pygame.key.get_pressed()
+
+        def transform_falling_objects(screen):
+            if (screen % 2) ==  1:
+                for obs in obstacles:
+                    obs.transform_to_snowball()
+            else:
+                for obs in obstacles:
+                    obs.transform_to_crying_child()
+
         for player in players:
             player.move(keys)
     
         if player.rect.left > WIDTH:
-            background.next_level()  
-            player.rect.right = 0    
-            
+            background.next_level() 
+            current_screen += 1 
+            player.rect.right = 0
+            transform_falling_objects(current_screen)    
 
         elif player.rect.right < 0:
             background.next_level()
+            current_screen +=1
             player.rect.left = WIDTH
-            obstacles.clear()
+            transform_falling_objects(current_screen)
 
         # SCORES UPDATEN
         score_timer += 1

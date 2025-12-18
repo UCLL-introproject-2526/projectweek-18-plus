@@ -15,6 +15,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
 
+REINDEER_IMAGE = pygame.image.load(
+    "voorbeeld/assets/reindeer_sleigh.png"
+).convert_alpha()
+
 # === SOUND PATH === 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SOUND_PATH = os.path.join(BASE_DIR, "sounds")
@@ -329,8 +333,10 @@ while running:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and not paused:
                 if ammo > 0: 
                     bullets.append(Bullet(player.rect.centerx, player.rect.top))
+
                     ammo -= 1
                     sound_throw.play()
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     paused = not paused
@@ -339,7 +345,7 @@ while running:
                      pygame.mixer.music.set_volume(0.1)
                     else:
                      pygame.mixer.music.set_volume(0.25)
-                     
+
                 if event.key ==pygame.K_SPACE and not paused:
                     if ammo > 0:
                         for player in players:

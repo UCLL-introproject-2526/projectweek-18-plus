@@ -101,6 +101,25 @@ class Bullet:
     def draw(self, screen):
         pygame.draw.rect(screen, (255, 255, 255), (self.rect.x + 5, self.rect.y, 6, 12))
 
+def draw_skin_wheel(screen, center_x, center_y, skins, index):
+    preview = pygame.transform.scale(skins[index], PREVIEW_SIZE)
+
+    prev_index = (index - 1) % len(skins)
+    next_index = (index + 1) % len(skins)
+
+    small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
+    small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
+
+    # main
+    screen.blit(preview,preview.get_rect(center=(center_x, center_y)))
+
+    # left
+    screen.blit(small_prev,small_prev.get_rect(center=(center_x - 120, center_y)))
+
+    # right
+    screen.blit(small_next,small_next.get_rect(center=(center_x + 120, center_y)))
+
+
 # == Start Screen ==
 def show_front_screen(screen, start_background, highscore, last_score=None, new_highscore=False):
     game_mode = None
@@ -124,8 +143,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
             new_text = FONT_SMALL.render("New Highscore!", True,(22,101,190))
             screen.blit(new_text, (WIDTH // 2 - new_text.get_width() // 2, HEIGHT // 4 + 60))
 
-        instruction = FONT_SMALL.render("Press SPACE to start", True, (0, 0, 0))
-        screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 4 + 200))
+        instruction = FONT_SMALL.render("Select Game Mode:", True, (0, 0, 0))
+        screen.blit(instruction, (WIDTH // 2 - instruction.get_width() // 2, HEIGHT // 4 + 260))
 
         # Last score
         if last_score is not None:
@@ -139,14 +158,14 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
         single_btn = pygame.Rect(
             WIDTH // 2 - button_width - button_spacing // 2,
-            HEIGHT // 4 + 450,
+            HEIGHT // 4 + 350,
             button_width,
             button_height
         )
 
         multi_btn = pygame.Rect(
             WIDTH // 2 + button_spacing // 2,
-            HEIGHT // 4 + 450,
+            HEIGHT // 4 + 350,
             button_width,
             button_height
         )
@@ -173,55 +192,159 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         )
 
         # Skin select label
-        skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
-        screen.blit(skin_label, (WIDTH // 2 - skin_label.get_width() // 2, HEIGHT // 4 + 260))
+        # skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
+        # screen.blit(skin_label, (WIDTH // 2 - skin_label.get_width() // 2, HEIGHT // 4 + 260))
 
         # Skins (wheel selector)
-        preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
-        screen.blit(preview, (WIDTH // 2 - PREVIEW_SIZE[0] // 2, HEIGHT // 4 + 320))
+        # preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
+        # screen.blit(preview, (WIDTH // 2 - PREVIEW_SIZE[0] // 2, HEIGHT // 4 + 320))
 
-        prev_index = (selected_index - 1) % len(skins)
-        next_index = (selected_index + 1) % len(skins)
+        # prev_index = (selected_index - 1) % len(skins)
+        # next_index = (selected_index + 1) % len(skins)
 
-        small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
-        small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
+        # small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
+        # small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
 
-        CENTER_X = WIDTH // 2
-        Y_POS = HEIGHT // 4 + 380
-        SPACING = 100
+        # CENTER_X = WIDTH // 2
+        # Y_POS = HEIGHT // 4 + 380
+        # SPACING = 100
 
-        screen.blit(preview, (CENTER_X - preview.get_width() // 2, HEIGHT // 4 + 320))
-        screen.blit(small_prev, (CENTER_X - SPACING - small_prev.get_width(), Y_POS))
-        screen.blit(small_next, (CENTER_X + SPACING, Y_POS))
+        # screen.blit(preview, (CENTER_X - preview.get_width() // 2, HEIGHT // 4 + 320))
+        # screen.blit(small_prev, (CENTER_X - SPACING - small_prev.get_width(), Y_POS))
+        # screen.blit(small_next, (CENTER_X + SPACING, Y_POS))
 
         pygame.display.update()
 
         # Event handling
         for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
-                    return skins[selected_index], "single"
+                    return "single"
 
                 if multi_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
-                    return skins[selected_index], "multi"
+                    return "multi"
+                
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            # if event.type == pygame.KEYDOWN:
+            #     if event.key == pygame.K_SPACE:
+            #         sound_intro.stop()
+            #         return skins[selected_index], "single"
+
+def show_single_avatar_select(screen):
+    selected_index = 0
+
+    while True:
+        screen.blit(start_background,(0,0))
+
+        title = FONT_TEXT.render("Choose your avatar", True, (0, 0, 0))
+        screen.blit(title, title.get_rect(center=(WIDTH//2,80)))
+        
+        prev_index = (selected_index - 1) % len(skins)
+        next_index = (selected_index + 1) % len(skins)
+        small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
+        small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
+        
+
+        draw_skin_wheel(screen, WIDTH//2,HEIGHT//2,skins,selected_index)
+        
+        hint = FONT_SMALL.render("SPACE to confirm", True, (0, 0, 0))
+        screen.blit(hint, hint.get_rect(center=(WIDTH // 2, HEIGHT - 100)))
+
+        choose = FONT_SMALL.render("(<- ->)", True, (0,0,0))
+        screen.blit(choose, choose.get_rect(center=(WIDTH//2,200)))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    sound_intro.stop()
-                    return skins[selected_index], "single"
-
                 if event.key == pygame.K_RIGHT:
                     selected_index = (selected_index + 1) % len(skins)
-
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skins)
+                if event.key == pygame.K_SPACE:
+                    return skins[selected_index]
+              
+                
+
+def show_multi_avatar_select(screen):
+    index_p1 = 0
+    index_p2 = 1
+
+    choosing = True
+
+    while True:
+        screen.blit(start_background,(0,0))
+
+        title = FONT_TEXT.render(f"Choose avatars", True, (0, 0, 0))
+        screen.blit(title, title.get_rect(center=(WIDTH // 2, 60)))
+
+        p1_text = FONT_SMALL.render("Player 1 (Q / D)", True, (0, 0, 0))
+        p2_text = FONT_SMALL.render("Player 2 (<- ->)", True, (0, 0, 0))
+
+        screen.blit(p1_text, p1_text.get_rect(center=(WIDTH // 4, 120)))
+        screen.blit(p2_text, p2_text.get_rect(center=(WIDTH * 3 // 4, 120)))
+
+        prev_p1 = (index_p1 - 1) % len(skins)
+        next_p1 = (index_p1 + 1) % len(skins)
+        small_prev_p1 = pygame.transform.scale(skins[prev_p1], SMALL_SIZE)
+        small_next_p1 = pygame.transform.scale(skins[next_p1], SMALL_SIZE)
+
+        prev_p2 = (index_p2 - 1) % len(skins)
+        next_p2 = (index_p2 + 1) % len(skins)
+        small_prev_p2 = pygame.transform.scale(skins[prev_p2], SMALL_SIZE)
+        small_next_p2 = pygame.transform.scale(skins[next_p2], SMALL_SIZE)
+
+        draw_skin_wheel(screen,WIDTH // 4,HEIGHT // 2,skins, index_p1)
+        draw_skin_wheel(screen,WIDTH * 3 // 4, HEIGHT // 2, skins, index_p2)
+
+        hint = FONT_SMALL.render("SPACE confirm", True, (0, 0, 0))
+        screen.blit(hint, hint.get_rect(center=(WIDTH // 2, HEIGHT - 80)))
+
+        pygame.display.update()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+            if event.type == pygame.KEYDOWN: #player1
+                if event.key == pygame.K_d:
+                    index_p1 = (index_p1 +1) % len(skins)
+                    if index_p1 == index_p2:
+                        index_p1 = (index_p1 +1)%len(skins)
+                if event.key == pygame.K_q:
+                    index_p1 = (index_p1 - 1) % len(skins)
+                    if index_p1 == index_p2:
+                        index_p1 = (index_p1 - 1) % len(skins)
+
+                if event.key == pygame.K_LEFT: #player2
+                    index_p2 = (index_p2 - 1) % len(skins)
+                    if index_p2 == index_p1:
+                        index_p2 = (index_p2 - 1) % len(skins)
+                if event.key == pygame.K_RIGHT:
+                    index_p2 = (index_p2 + 1) % len(skins)
+                    if index_p2 == index_p1:
+                        index_p2 = (index_p2 + 1) % len(skins)  
+
+                
+                if event.key == pygame.K_SPACE:
+                    return skins[index_p1], skins[index_p2]
+
+
 
 
 # == End Screen ==
@@ -255,10 +378,23 @@ reindeer_event = None
 while running:
 
     # 1. Start screen
-    chosen_image, game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
+    game_mode = show_front_screen(screen, start_background, highscore, last_score, new_highscore)
+    if game_mode == "single":
+        avatar = show_single_avatar_select(screen)
+    elif game_mode == "multi":
+        avatar1, avatar2 = show_multi_avatar_select(screen)
+        
 
     #uitleg scherm
-    how_to_play = pygame.image.load("voorbeeld/assets/how_to_play.png").convert()
+
+    if game_mode == "single":
+        avatar = show_single_avatar_select(screen)
+        how_to_play = pygame.image.load("voorbeeld/assets/single_player_bg.png").convert()
+
+    elif game_mode == "multi":
+        avatar1, avatar2 = show_multi_avatar_select(screen)
+        how_to_play = pygame.image.load("voorbeeld/assets/multi_player_bg.png").convert()
+    
     how_to_play = pygame.transform.scale(how_to_play,(WIDTH,HEIGHT))
 
     waiting_for_start = True
@@ -274,7 +410,7 @@ while running:
 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    waiting_for_space = False
+                    waiting_for_start = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:  # Linkermuisknop
@@ -287,11 +423,11 @@ while running:
     # player(s)
     players = []
     if game_mode == "single":
-        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80))
+        players.append(Player(avatar, controls="arrows", start_x=WIDTH // 2 - 80))
 
     elif game_mode == "multi":
-        players.append(Player(chosen_image, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
-        players.append(Player(chosen_image, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
+        players.append(Player(avatar1, controls="arrows", start_x=WIDTH // 2 - 80, allow_wrap=False))
+        players.append(Player(avatar2, controls="qd", start_x=WIDTH // 2 + 80, allow_wrap=False))
 
 
     obstacles = []

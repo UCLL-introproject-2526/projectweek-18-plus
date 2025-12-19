@@ -30,7 +30,7 @@ crying_channels = [pygame.mixer.Channel(CRYING_START_CHANNEL + i)for i in range(
 crying_children = 0
 
 CRYING_ICON = pygame.image.load("voorbeeld/assets/cryingbaby.png").convert_alpha()
-CRYING_ICON = pygame.transform.scale(CRYING_ICON, (40, 53))
+CRYING_ICON = pygame.transform.scale(CRYING_ICON, (50, 50))
 
 
 # == Loading screen == 
@@ -61,7 +61,7 @@ explosions = []
 
 # == Arrow ==
 ARROW_IMAGE = pygame.image.load("voorbeeld/assets/arrow_right.png").convert_alpha()
-ARROW_IMAGE = pygame.transform.scale(ARROW_IMAGE, (80, 80))
+ARROW_IMAGE = pygame.transform.scale(ARROW_IMAGE, (100, 100))
 
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
@@ -794,21 +794,27 @@ while running:
         if show_arrow:
             arrow_bob = int(math.sin(pygame.time.get_ticks() * 0.005) * 10)
 
-            x = WIDTH - ARROW_IMAGE.get_width() - 20
+            x = WIDTH - ARROW_IMAGE.get_width()
             y = HEIGHT - ARROW_IMAGE.get_height() - 20 + arrow_bob
 
             screen.blit(ARROW_IMAGE, (x, y))
         
         if (game_mode == "single" and background.current_index == 1 and crying_children > 0 ):
-            text = FONT_SMALL.render("Stop the crying...", True, (255, 255, 255))
+            text = FONT_SMALL.render("... stop the crying", True, (255, 255, 255))
+            rect = text.get_rect(center=(WIDTH // 2, 30))
+            screen.blit(text, rect)
+
+        if (game_mode == "single" and background.current_index == 0):
+            text = FONT_SMALL.render("Collect points ...", True, (255, 255, 255))
             rect = text.get_rect(center=(WIDTH // 2, 30))
             screen.blit(text, rect)
 
         # crying child
         if game_mode == "single":
+            bob = int(math.sin(pygame.time.get_ticks() * 0.02) * 5)
             padding = 10
             start_x = WIDTH - CRYING_ICON.get_width() - padding
-            start_y = 10
+            start_y = 10 + bob
 
             for i in range(crying_children):
                 x = start_x - i * (CRYING_ICON.get_width() + 5)

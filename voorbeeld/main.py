@@ -11,6 +11,8 @@ from saveload import SaveManager, ScoreHistory
 import os
 import random
 
+GAME_OVER_DELAY = 60
+
 pygame.init()
 pygame.mixer.init()
 
@@ -233,7 +235,7 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
         multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 350 ,button_width,button_height)
 
-        quit_btn = pygame.Rect(WIDTH // 2 - 125 ,HEIGHT // 4 + 420,250,50)
+        quit_btn = pygame.Rect(WIDTH // 2 - 125 ,HEIGHT // 4 + 420,200,25)
 
         mouse_pos = pygame.mouse.get_pos()
 
@@ -744,8 +746,10 @@ while running:
             for player in players:
                 if player.hitbox.colliderect(obs.rect):
                     sound_game_over.play()
-                    explosions.append({"pos": obs.rect.center,"timer": 10})
+                    explosions.append({"pos": obs.rect.center, "timer": 10})
                     dead_player = player
+
+                    game_over_timer = GAME_OVER_DELAY  # 👈 ADD THIS
                     game_active = False
                     break
 
@@ -918,6 +922,17 @@ while running:
 
             score_winner = max(s1, s2)
             score_loser = min(s1, s2)
+
+    if 'game_over_timer' in locals():
+        while game_over_timer > 0:
+            clock.tick(FPS)
+            game_over_timer -= 1
+
+        background.render(screen)
+        for player in players:
+            player.draw(screen, pygame.key.get_pressed())
+
+        pygame.display.update()
 
     show_game_over(screen, last_score, score_winner, score_loser)
 

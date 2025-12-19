@@ -233,6 +233,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
         multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 350 ,button_width,button_height)
 
+        quit_btn = pygame.Rect(WIDTH // 2 - 125 ,HEIGHT // 4 + 420,250,50)
+
         mouse_pos = pygame.mouse.get_pos()
 
         # Hover effect
@@ -242,11 +244,23 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         pygame.draw.rect(screen, single_color, single_btn, border_radius=8)
         pygame.draw.rect(screen, multi_color, multi_btn, border_radius=8)
 
+        quit_color = (150, 60, 60) if quit_btn.collidepoint(mouse_pos) else (90, 30, 30)
+        pygame.draw.rect(screen, quit_color, quit_btn, border_radius=8)
+
+        quit_text = FONT_SMALL.render("QUIT GAME", True, (255, 255, 255))
+        screen.blit(quit_text, quit_text.get_rect(center=quit_btn.center))
+
         single_text = FONT_SMALL.render("SINGLEPLAYER", True, (255, 255, 255))
         multi_text  = FONT_SMALL.render("MULTIPLAYER", True, (255, 255, 255))
 
         screen.blit(single_text,single_text.get_rect(center=single_btn.center))
         screen.blit(multi_text,multi_text.get_rect(center=multi_btn.center))
+
+        quit_color = (150, 60, 60) if quit_btn.collidepoint(mouse_pos) else (90, 30, 30)
+        pygame.draw.rect(screen, quit_color, quit_btn, border_radius=8)
+
+        quit_text = FONT_SMALL.render("QUIT GAME", True, (255, 255, 255))
+        screen.blit(quit_text, quit_text.get_rect(center=quit_btn.center))
 
         # # Skin select label
         # skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
@@ -272,25 +286,28 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
         pygame.display.update()
 
-        # Event handling
-        for event in pygame.event.get():
+       # Event handling
+        for event in pygame.event.get():   
+
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                raise SystemExit
+
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
                     return skins[selected_index], "single"
 
-                if multi_btn.collidepoint(event.pos):
+                elif multi_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
-                    return skins[selected_index],"multi"
+                    return skins[selected_index], "multi"
 
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
+                elif quit_btn.collidepoint(event.pos):
+                    pygame.quit()
+                    raise SystemExit
 
             # if event.type == pygame.KEYDOWN:
             #     if event.key == pygame.K_SPACE:

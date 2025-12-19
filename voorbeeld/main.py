@@ -75,7 +75,7 @@ def draw_title(surface, text, font, center_x, y):
     # Main text
     surface.blit(text_surf, rect)
 
-#== santa hat O == 
+# == santa hat O == 
     target_char = "O"
 
     if target_char in text:

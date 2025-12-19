@@ -13,10 +13,23 @@ import random
 
 pygame.init()
 pygame.mixer.init()
+pygame.mixer.set_num_channels(16)
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Santa Dodger")
 clock = pygame.time.Clock()
+
+# == Crying Childeren == 
+CRYING_START_CHANNEL = 8
+MAX_CRYING_CHILDREN = 8
+
+crying_channels = [pygame.mixer.Channel(CRYING_START_CHANNEL + i)for i in range(MAX_CRYING_CHILDREN)]
+
+crying_children = 0
+
+CRYING_ICON = pygame.image.load("voorbeeld/assets/cryingbaby.png").convert_alpha()
+CRYING_ICON = pygame.transform.scale(CRYING_ICON, (40, 40))
+
 
 # == Loading screen == 
 screen.fill((30, 30, 60))
@@ -115,6 +128,7 @@ try:
     pygame.mixer.music.load(os.path.join(SOUND_PATH, "christmas-holiday-short-1-450314.wav"))
     pygame.mixer.music.set_volume(0.4)
     pygame.mixer.music.play(-1)
+    sound_crying = pygame.mixer.Sound(os.path.join(SOUND_PATH, "baby-crying-high-pitch-434113.wav"))
 
     print("All sounds loaded successfully!")
 
@@ -247,28 +261,6 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         screen.blit(single_text,single_text.get_rect(center=single_btn.center))
         screen.blit(multi_text,multi_text.get_rect(center=multi_btn.center))
 
-        # # Skin select label
-        # skin_label = FONT_SMALL.render("Skin Select: (<- ->)", True, (0, 0, 0))
-        # screen.blit(skin_label, (WIDTH // 2 - skin_label.get_width() // 2, HEIGHT // 4 + 260))
-
-        # # Skins (wheel selector)
-        # preview = pygame.transform.scale(skins[selected_index], PREVIEW_SIZE)
-        # screen.blit(preview, (WIDTH // 2 - PREVIEW_SIZE[0] // 2, HEIGHT // 4 + 320))
-
-        # prev_index = (selected_index - 1) % len(skins)
-        # next_index = (selected_index + 1) % len(skins)
-
-        # small_prev = pygame.transform.scale(skins[prev_index], SMALL_SIZE)
-        # small_next = pygame.transform.scale(skins[next_index], SMALL_SIZE)
-
-        # CENTER_X = WIDTH // 2
-        # Y_POS = HEIGHT // 4 + 380
-        # SPACING = 100
-
-        # screen.blit(preview, (CENTER_X - preview.get_width() // 2, HEIGHT // 4 + 320))
-        # screen.blit(small_prev, (CENTER_X - SPACING - small_prev.get_width(), Y_POS))
-        # screen.blit(small_next, (CENTER_X + SPACING, Y_POS))
-
         pygame.display.update()
 
         # Event handling
@@ -291,16 +283,6 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
                 pygame.quit()
                 exit()
 
-            # if event.type == pygame.KEYDOWN:
-            #     if event.key == pygame.K_SPACE:
-            #         sound_intro.stop()
-            #         return skins[selected_index], "single"
-
-            #     if event.key == pygame.K_RIGHT:
-            #         selected_index = (selected_index + 1) % len(skins)
-
-            #     if event.key == pygame.K_LEFT:
-            #         selected_index = (selected_index - 1) % len(skins)
 
 def show_single_avatar_select(screen):
     selected_index = 0
@@ -520,6 +502,10 @@ while running:
     scores = {}
     for player in players:
         scores[player] = Score()
+
+    # crying childeren
+    crying_children = 0
+    max_crying_channels = 8
     
     # ammo = 10
     player_ammo = {player: 10 for player in players}
@@ -654,13 +640,17 @@ while running:
         if gift_spawn_timer >= 3 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
+        
+        for gift in gifts[:]:
+            if gift.rect.top > HEIGHT:
+                gifts.remove(gift)
 
-        # for gift in gifts[:]:   -> zorgen dat er iets gebeurd (wenend kind) als je het pakje niet vangt
-        #     if gift.rect.top > HEIGHT and game_mode == "single":
-        #         font = pygame.font.SysFont(None, 64)
-        #         pause_text = font.render("crying baby", True, (255, 255, 0))
-        #         screen.blit(pause_text, (WIDTH // 2 - pause_text.get_width() // 2, HEIGHT // 2))
-        #         gifts.remove(gift)
+                # === START CRYING CHILD ===
+                if game_mode == "single" and background.current_index == 0 and crying_children < max_crying_channels:
+                    channel = crying_channels[crying_children]
+                    channel.play(sound_crying, loops=-1)
+                    crying_children += 1
+
 
         level_speed_multiplier = 1 + (level - 1) * 0.5
 
@@ -703,7 +693,9 @@ while running:
                     scores[player].add(10)
                     player_ammo[player] += 3
                     gifts.remove(gift)
-                    break
+                
+        
+        hit = False
 
         for bullet in bullets[:]:
             for obs in obstacles[:]:
@@ -712,7 +704,15 @@ while running:
                     bullets.remove(bullet)
                     scores[bullet.owner].add(3)
                     explosions.append({"pos": obs.rect.center,"timer": 15})
+
+                    if background.current_index == 1 and crying_children > 0:
+                        crying_children -= 1
+                        crying_channels[crying_children].stop()
+
+                    hit = True
                     break
+            if hit:
+                break
         
         # REINDEER-EVENT
         if total_score >= next_reindeer_score:
@@ -762,6 +762,16 @@ while running:
                 screen.blit(ammo_text, (x, 40))
 
                 x += WIDTH - 240
+
+        # crying child
+        if game_mode == "single":
+            padding = 10
+            start_x = WIDTH - CRYING_ICON.get_width() - padding
+            start_y = 10
+
+            for i in range(crying_children):
+                x = start_x - i * (CRYING_ICON.get_width() + 5)
+                screen.blit(CRYING_ICON, (x, start_y))
 
 
         if show_level_up and game_mode == "single":
@@ -823,6 +833,10 @@ while running:
 
     winner_text = None
 
+    for channel in crying_channels:
+        channel.stop()
+    crying_children = 0
+
     if game_mode == "single":
         last_score = scores[players[0]].value
         score_history.add_score(last_score)
@@ -831,6 +845,10 @@ while running:
             highscore = last_score
             new_highscore = True
             save_manager.set_highscore(highscore)
+
+        for channel in crying_channels:
+         channel.stop()
+         crying_children = 0
 
     else:  # multiplayer
         if dead_player is not None:

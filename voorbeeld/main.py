@@ -28,7 +28,7 @@ crying_channels = [pygame.mixer.Channel(CRYING_START_CHANNEL + i)for i in range(
 crying_children = 0
 
 CRYING_ICON = pygame.image.load("voorbeeld/assets/cryingbaby.png").convert_alpha()
-CRYING_ICON = pygame.transform.scale(CRYING_ICON, (40, 40))
+CRYING_ICON = pygame.transform.scale(CRYING_ICON, (40, 53))
 
 
 # == Loading screen == 
@@ -170,7 +170,8 @@ skins = [
     crop_surface(pygame.image.load("voorbeeld/assets/Elf .png").convert_alpha())
 ]
 
-selected_skin_index = 0
+default_avatar = skins[0]
+current_avatar = default_avatar
 
 PREVIEW_SIZE = (90, 100)   #geselecteerde skin
 SMALL_SIZE = (50, 60)       #linksrechts preview
@@ -285,7 +286,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
 
 def show_single_avatar_select(screen):
-    selected_index = 0
+    global current_avatar
+    selected_index = skins.index(current_avatar)
 
     while True:
         screen.blit(start_background,(0,0))
@@ -320,6 +322,7 @@ def show_single_avatar_select(screen):
                 if event.key == pygame.K_LEFT:
                     selected_index = (selected_index - 1) % len(skins)
                 if event.key == pygame.K_SPACE:
+                    current_avatar = skins[selected_index]
                     return skins[selected_index]
               
                 

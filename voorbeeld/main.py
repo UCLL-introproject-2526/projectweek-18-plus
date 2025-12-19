@@ -61,7 +61,7 @@ explosions = []
 
 # == Arrow ==
 ARROW_IMAGE = pygame.image.load("voorbeeld/assets/arrow_right.png").convert_alpha()
-ARROW_IMAGE = pygame.transform.scale(ARROW_IMAGE, (100, 100))
+ARROW_IMAGE = pygame.transform.scale(ARROW_IMAGE, (120, 120))
 
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
@@ -707,13 +707,19 @@ while running:
                     game_active = False
                     break
 
+        gifts_to_remove = []
+
         for gift in gifts[:]:
             for player in players:
                 if player.hitbox.colliderect(gift.rect):
                     sound_catch.play()
                     scores[player].add(10)
                     player_ammo[player] += 3
-                    gifts.remove(gift)
+                    if gift not in gifts_to_remove:
+                        gifts_to_remove.append(gift)
+        for gift in gifts_to_remove:
+            if gift in gifts:
+                gifts.remove(gift)
                 
         
         hit = False

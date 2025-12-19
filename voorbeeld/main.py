@@ -11,6 +11,8 @@ from saveload import SaveManager, ScoreHistory
 import os
 import random
 
+GAME_OVER_DELAY = 60
+
 pygame.init()
 pygame.mixer.init()
 pygame.mixer.set_num_channels(16)
@@ -247,6 +249,8 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
 
         multi_btn = pygame.Rect(WIDTH // 2 + button_spacing // 2,HEIGHT // 4 + 350 ,button_width,button_height)
 
+        quit_btn = pygame.Rect(WIDTH // 2 - 125 ,HEIGHT // 4 + 420,200,25)
+
         mouse_pos = pygame.mouse.get_pos()
 
         # Hover effect
@@ -262,27 +266,35 @@ def show_front_screen(screen, start_background, highscore, last_score=None, new_
         screen.blit(single_text,single_text.get_rect(center=single_btn.center))
         screen.blit(multi_text,multi_text.get_rect(center=multi_btn.center))
 
+        quit_color = (150, 60, 60) if quit_btn.collidepoint(mouse_pos) else (90, 30, 30)
+        pygame.draw.rect(screen, quit_color, quit_btn, border_radius=8)
+
+        quit_text = FONT_SMALL.render("QUIT GAME", True, (255, 255, 255))
+        screen.blit(quit_text, quit_text.get_rect(center=quit_btn.center))
+
         pygame.display.update()
 
         # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                raise SystemExit
+            
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+
                 if single_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
                     return skins[selected_index], "single"
 
-                if multi_btn.collidepoint(event.pos):
+                elif multi_btn.collidepoint(event.pos):
                     sound_intro.stop()
                     selected_skin_index = selected_index
                     return skins[selected_index],"multi"
-
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
+                
+                elif quit_btn.collidepoint(event.pos):
+                    pygame.quit()
+                    raise SystemExit
 
 
 def show_single_avatar_select(screen):
@@ -686,6 +698,7 @@ while running:
                     sound_game_over.play()
                     explosions.append({"pos": obs.rect.center,"timer": 10})
                     dead_player = player
+                    game_over_timer = GAME_OVER_DELAY
                     game_active = False
                     break
 
@@ -886,6 +899,18 @@ while running:
 
             score_winner = max(s1, s2)
             score_loser = min(s1, s2)
+
+    if 'game_over_timer' in locals():
+        while game_over_timer > 0:
+            clock.tick(FPS)
+            game_over_timer -= 1
+
+        background.render(screen)
+        for player in players:
+            player.draw(screen, pygame.key.get_pressed())
+
+        pygame.display.update()
+
 
     show_game_over(screen, last_score, score_winner, score_loser)
 

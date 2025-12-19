@@ -59,6 +59,10 @@ EXPLOSION_IMAGE = pygame.image.load("voorbeeld/assets/ontploft.png").convert_alp
 EXPLOSION_IMAGE = pygame.transform.scale(EXPLOSION_IMAGE, (90, 90))
 explosions = []
 
+# == Arrow ==
+ARROW_IMAGE = pygame.image.load("voorbeeld/assets/arrow_right.png").convert_alpha()
+ARROW_IMAGE = pygame.transform.scale(ARROW_IMAGE, (80, 80))
+
 # == Fonts ==
 FONT_TITLE = pygame.font.Font("voorbeeld/assets/fonts/PressStart2P-Regular.ttf", 48)
 FONT_TEXT = pygame.font.Font("voorbeeld/assets/fonts/Montserrat-Bold.ttf", 32)
@@ -614,7 +618,8 @@ while running:
             background.next_level() 
             current_screen += 1 
             player.rect.right = 0
-            transform_falling_objects(current_screen)    
+            transform_falling_objects(current_screen) 
+            gifts.clear()
 
         elif player.rect.right < 0:
             background.next_level()
@@ -652,7 +657,7 @@ while running:
             spawn_timer = 0
 
         gift_spawn_timer += 1
-        if gift_spawn_timer >= 3 * spawn_rate:
+        if background.current_index == 0 and gift_spawn_timer >= 3 * spawn_rate:
             gifts.append(Gift())
             gift_spawn_timer = 0
         
@@ -718,7 +723,10 @@ while running:
                 if bullet.rect.colliderect(obs.rect):
                     obstacles.remove(obs)
                     bullets.remove(bullet)
-                    scores[bullet.owner].add(3)
+                    
+                    if background.current_index == 0:
+                        scores[bullet.owner].add(3)
+
                     explosions.append({"pos": obs.rect.center,"timer": 15})
 
                     if background.current_index == 1 and crying_children > 0:
@@ -752,6 +760,9 @@ while running:
                 if flake[1] > HEIGHT:
                     flake[1] = -5
                     flake[0] = random.randint(0, WIDTH)
+        
+        # arrow 
+        show_arrow = (game_mode == "single" and crying_children > 0 and background.current_index != 1)
 
         # DRAW
         background.render(screen)
@@ -778,6 +789,20 @@ while running:
                 screen.blit(ammo_text, (x, 40))
 
                 x += WIDTH - 240
+
+        # arrow
+        if show_arrow:
+            arrow_bob = int(math.sin(pygame.time.get_ticks() * 0.005) * 10)
+
+            x = WIDTH - ARROW_IMAGE.get_width() - 20
+            y = HEIGHT - ARROW_IMAGE.get_height() - 20 + arrow_bob
+
+            screen.blit(ARROW_IMAGE, (x, y))
+        
+        if (game_mode == "single" and background.current_index == 1 and crying_children > 0 ):
+            text = FONT_SMALL.render("Stop the crying...", True, (255, 255, 255))
+            rect = text.get_rect(center=(WIDTH // 2, 30))
+            screen.blit(text, rect)
 
         # crying child
         if game_mode == "single":
